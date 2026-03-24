@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Wifi, TrendingUp, Zap, Play, ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Mascot } from "@/components/mascot";
+import { getSession } from "@/lib/auth";
 import sql from "@/lib/db";
 import { getScoreInfo } from "@/lib/score";
 import { formatDateShort } from "@/lib/utils";
@@ -31,6 +32,7 @@ async function getData() {
 }
 
 export default async function InicioPage() {
+  const session = await getSession();
   const { tests, stats } = await getData();
 
   const avgScore = stats.avg_score != null ? Math.round(Number(stats.avg_score) * 10) / 10 : null;
@@ -51,7 +53,7 @@ export default async function InicioPage() {
           <div className="flex-1">
             <p className="text-white/50 text-sm mb-1">Bem-vindo de volta,</p>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              Usuário!
+              {session?.name ?? "Usuário"}!
             </h1>
             <p className="text-white/50 text-sm mb-6 max-w-md leading-relaxed">
               Pronto para diagnosticar a conexão da sua escola? O teste leva menos de 5 minutos.

@@ -1,10 +1,9 @@
 import sql from "@/lib/db";
+import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 
 export async function POST() {
   try {
-    console.log("Starting database setup...");
-
     // Create users table
     await sql`
       CREATE TABLE IF NOT EXISTS users (
@@ -16,40 +15,37 @@ export async function POST() {
       )
     `;
 
-    console.log("✓ Users table created or already exists");
+    // Ensure school_name column exists
+    await sql`
+      ALTER TABLE speed_tests ADD COLUMN IF NOT EXISTS school_name VARCHAR(255)
+    `.catch(() => {});
 
-    // Check if users already exist
-    const existing = await sql`SELECT COUNT(*)::int as count FROM users`;
+    // Hash the default password
+    const hash = await bcrypt.hash("genie2024", 10);
 
-    if (existing[0].count === 0) {
-      console.log("Inserting demo users...");
+    // Upsert demo users (insert or update password hash)
+    const demoUsers = [
+      { name: "Fernando", email: "fernando@jovensgenios.com" },
+      { name: "Nathália", email: "nathalia@gmail.com" },
+      { name: "João", email: "joao.figueroa@jovensgenios.com" },
+    ];
 
-      // Insert demo users
+    for (const u of demoUsers) {
       await sql`
         INSERT INTO users (name, email, password_hash)
-        VALUES
-          (${'Fernando'}, ${'fernando@jovensgenios.com'}, ${'seedsalt99:c4b2f5078c890cc56729b0eb4423eb3f33b303ae4600c66703fc0c96d962c27d'}),
-          (${'Nathália'}, ${'nathalia@gmail.com'}, ${'seedsalt99:c4b2f5078c890cc56729b0eb4423eb3f33b303ae4600c66703fc0c96d962c27d'}),
-          (${'João'}, ${'joao.figueroa@jovensgenios.com'}, ${'seedsalt99:c4b2f5078c890cc56729b0eb4423eb3f33b303ae4600c66703fc0c96d962c27d'})
+        VALUES (${u.name}, ${u.email}, ${hash})
+        ON CONFLICT (email) DO UPDATE SET password_hash = ${hash}
       `;
-
-      console.log("✓ Demo users inserted");
-    } else {
-      console.log("✓ Users already exist, skipping insertion");
     }
 
-    // Get all users
     const users = await sql`SELECT id, name, email FROM users ORDER BY created_at`;
-
-    console.log("✓ Setup complete. Users in database:", users.length);
 
     return NextResponse.json({
       success: true,
-      message: "Banco de dados configurado com sucesso!",
-      users: users,
+      message: "Banco de dados configurado com sucesso! Senha padrão: genie2024",
+      users,
     });
   } catch (err) {
-    console.error("Setup error:", err);
     return NextResponse.json(
       { error: "Erro ao configurar banco de dados: " + String(err) },
       { status: 500 }
