@@ -55,6 +55,65 @@ export async function downloadXLSX(tests: HistoryTest[]): Promise<void> {
   XLSX.writeFile(wb, `genieconnect-relatorios-${formatDateFilename(new Date())}.xlsx`);
 }
 
+export function triggerAllPDF(tests: HistoryTest[]): void {
+  const now = new Date();
+  const rows = tests.map((t, i) => {
+    const score = t.score != null ? Number(t.score).toFixed(1) : "—";
+    const ping = Number(t.ping_ms).toFixed(1);
+    const jitter = Number(t.jitter_ms).toFixed(1);
+    const dl = Number(t.download_mbps).toFixed(2);
+    const conn = connectionLabel(t.connection_type, t.effective_type);
+    return `<tr>
+      <td>${i + 1}</td>
+      <td>${formatDate(t.created_at)}</td>
+      <td>${conn}</td>
+      <td class="score">${score}</td>
+      <td>${ping}</td>
+      <td>${jitter}</td>
+      <td>${dl}</td>
+    </tr>`;
+  }).join("");
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8">
+<title>Relatórios GenieConnect</title>
+<style>
+@media print { * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #EEF2F7; color: #111827; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 40px; }
+.header { background: linear-gradient(135deg, #0F172A, #0A2040); color: white; border-radius: 16px; padding: 28px 32px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; }
+.brand { font-size: 24px; font-weight: 800; }
+.brand span { color: #38BDF8; }
+.subtitle { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 4px; }
+.date { color: rgba(255,255,255,0.5); font-size: 13px; }
+table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #E5E7EB; }
+th { background: #F9FAFB; text-align: left; padding: 10px 14px; font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #E5E7EB; }
+td { padding: 10px 14px; font-size: 13px; color: #374151; border-bottom: 1px solid #F3F4F6; }
+tr:last-child td { border-bottom: none; }
+.score { color: #3B82F6; font-weight: 700; }
+.footer { text-align: center; color: #9CA3AF; font-size: 12px; margin-top: 24px; }
+</style></head>
+<body>
+<div class="header">
+  <div>
+    <div class="brand">Genie<span>Connect</span></div>
+    <div class="subtitle">Painel de Monitoramento — ${tests.length} registros</div>
+  </div>
+  <div class="date">Exportado em ${formatDate(now.toISOString())}</div>
+</div>
+<table>
+  <thead><tr>
+    <th>#</th><th>Data</th><th>Conexão</th><th>Score</th><th>Ping (ms)</th><th>Jitter (ms)</th><th>Download (Mbps)</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<div class="footer">GenieConnect — Diagnóstico de Conexão Escolar</div>
+</body></html>`;
+
+  const win = window.open("", "_blank");
+  if (win) { win.document.write(html); win.document.close(); win.focus(); setTimeout(() => win.print(), 600); }
+}
+
 export function triggerPDF(test: HistoryTest): void {
   const date = formatDate(test.created_at);
   const score = test.score != null ? Number(test.score).toFixed(1) : "—";

@@ -12,18 +12,32 @@ export function SchoolCard({ testId, initialSchool }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(initialSchool ?? "");
+  const [displayed, setDisplayed] = useState(initialSchool);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSave() {
     setSaving(true);
-    await fetch(`/api/tests/${testId}/school`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ schoolName: value.trim() || null }),
-    });
-    setSaving(false);
-    setEditing(false);
-    router.refresh();
+    setError(null);
+    try {
+      const res = await fetch(`/api/tests/${testId}/school`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schoolName: value.trim() || null }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data?.error ?? "Erro ao salvar. Verifique o banco de dados.");
+      } else {
+        setDisplayed(value.trim() || null);
+        setEditing(false);
+        router.refresh();
+      }
+    } catch {
+      setError("Erro de conexão ao salvar.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleCancel() {
@@ -42,6 +56,7 @@ export function SchoolCard({ testId, initialSchool }: Props) {
             <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-1">
               Escola / Instituição
             </p>
+            {error && <p className="text-xs text-red-500 mb-1">{error}</p>}
             {editing ? (
               <div className="flex items-center gap-2 mt-1">
                 <input
@@ -72,12 +87,12 @@ export function SchoolCard({ testId, initialSchool }: Props) {
             ) : (
               <p
                 className={`text-sm ${
-                  initialSchool
+                  displayed
                     ? "text-gray-800 font-medium"
                     : "text-gray-400 italic"
                 }`}
               >
-                {initialSchool || "Nenhuma escola informada"}
+                {displayed || "Nenhuma escola informada"}
               </p>
             )}
           </div>

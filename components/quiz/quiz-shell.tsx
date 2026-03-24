@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useQuizTest } from "@/hooks/use-quiz-test";
 import { QuestionCard } from "./question-card";
 import { MeasuringScreen } from "./measuring-screen";
+import { SpeedometerScreen } from "./speedometer-screen";
 import { Mascot } from "@/components/mascot";
 import { QUESTIONS } from "@/lib/quiz-data";
 import { getScoreInfo } from "@/lib/score";
@@ -30,11 +31,14 @@ export function QuizShell() {
 
   if (state.phase === "idle" || state.phase === "measuring") {
     const isDl = state.phase === "measuring" && state.answers.length === QUESTIONS.length;
+    if (isDl) {
+      return <SpeedometerScreen mbps={state.liveDownload} />;
+    }
     return (
       <MeasuringScreen
-        message={isDl ? "Medindo velocidade de download..." : "Medindo sua conexão..."}
-        subMessage={isDl ? `${state.liveDownload.toFixed(1)} Mbps` : "O Genie está coletando ping, jitter e velocidade.\nIsso leva apenas alguns segundos."}
-        pills={isDl ? undefined : ["Ping...", "Jitter...", "Download...", "Tipo de rede..."]}
+        message="Medindo sua conexão..."
+        subMessage="O Genie está coletando ping, jitter e velocidade.\nIsso leva apenas alguns segundos."
+        pills={["Ping...", "Jitter...", "Download...", "Tipo de rede..."]}
       />
     );
   }
