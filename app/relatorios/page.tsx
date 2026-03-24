@@ -4,16 +4,17 @@ import { DownloadChart } from "@/components/reports/download-chart";
 import { PingChart } from "@/components/reports/ping-chart";
 import { TestsTable } from "@/components/reports/tests-table";
 import { ReportButtons } from "@/components/reports/report-buttons";
+import { getSession } from "@/lib/auth";
 import sql from "@/lib/db";
 import { getScoreInfo } from "@/lib/score";
 import type { HistoryTest } from "@/lib/types";
 
-async function getData() {
+async function getData(userId: number) {
   try {
     const tests = (await sql`
       SELECT id, created_at, connection_type, effective_type, ping_ms, jitter_ms,
              download_mbps, upload_mbps, score, quiz_results, min_ping_ms, max_ping_ms, school_name
-      FROM speed_tests ORDER BY created_at DESC LIMIT 50
+      FROM speed_tests WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 50
     `) as HistoryTest[];
     const [stats] = await sql`
       SELECT
@@ -22,6 +23,7 @@ async function getData() {
         AVG(ping_ms)::float AS avg_ping,
         MAX(download_mbps)::float AS best_download
       FROM speed_tests
+      WHERE user_id = ${userId}
     `;
     return { tests, stats };
   } catch {
@@ -33,7 +35,8 @@ async function getData() {
 }
 
 export default async function RelatoriosPage() {
-  const { tests, stats } = await getData();
+  const session = await getSession();
+  const { tests, stats } = await getData(session?.userId ?? 0);
 
   const avgScore = stats.avg_score != null ? Math.round(Number(stats.avg_score) * 10) / 10 : null;
   const avgPing = stats.avg_ping != null ? Math.round(Number(stats.avg_ping) * 10) / 10 : null;

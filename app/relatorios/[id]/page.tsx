@@ -6,16 +6,17 @@ import { ResponseChart } from "@/components/reports/response-chart";
 import { SessionHeader } from "@/components/reports/session-header";
 import { SchoolCard } from "@/components/reports/school-card";
 import { ConnectionBadge } from "@/components/speed-test/connection-badge";
+import { getSession } from "@/lib/auth";
 import sql from "@/lib/db";
 import { getScoreInfo, getPingInfo, getDownloadInfo } from "@/lib/score";
 import { formatDate } from "@/lib/utils";
 import { QUESTIONS } from "@/lib/quiz-data";
 import type { HistoryTest, QuizAnswer, ConnectionType, EffectiveType } from "@/lib/types";
 
-async function getTest(id: string) {
+async function getTest(id: string, userId: number) {
   const numId = parseInt(id, 10);
   if (isNaN(numId)) return null;
-  const rows = await sql`SELECT * FROM speed_tests WHERE id = ${numId}`;
+  const rows = await sql`SELECT * FROM speed_tests WHERE id = ${numId} AND user_id = ${userId}`;
   const test = (rows[0] ?? null) as (HistoryTest & { school_name: string | null; school_rank: number | null }) | null;
   if (!test) return null;
 
@@ -37,7 +38,8 @@ async function getTest(id: string) {
 
 export default async function RelatorioPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const test = await getTest(id);
+  const session = await getSession();
+  const test = await getTest(id, session?.userId ?? 0);
   if (!test) notFound();
 
   const scoreInfo = getScoreInfo(test.score ?? 0);

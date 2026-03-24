@@ -15,10 +15,9 @@ export async function POST() {
       )
     `;
 
-    // Ensure school_name column exists
-    await sql`
-      ALTER TABLE speed_tests ADD COLUMN IF NOT EXISTS school_name VARCHAR(255)
-    `.catch(() => {});
+    // Ensure speed_tests columns exist
+    await sql`ALTER TABLE speed_tests ADD COLUMN IF NOT EXISTS school_name VARCHAR(255)`.catch(() => {});
+    await sql`ALTER TABLE speed_tests ADD COLUMN IF NOT EXISTS user_id BIGINT REFERENCES users(id) ON DELETE SET NULL`.catch(() => {});
 
     // Hash the default password
     const hash = await bcrypt.hash("genie2024", 10);

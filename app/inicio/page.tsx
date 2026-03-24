@@ -7,11 +7,12 @@ import sql from "@/lib/db";
 import { getScoreInfo } from "@/lib/score";
 import { formatDateShort } from "@/lib/utils";
 
-async function getData() {
+async function getData(userId: number) {
   try {
     const tests = await sql`
       SELECT id, created_at, score, school_name
       FROM speed_tests
+      WHERE user_id = ${userId}
       ORDER BY created_at DESC
       LIMIT 5
     `;
@@ -21,6 +22,7 @@ async function getData() {
         AVG(score)::float AS avg_score,
         MAX(score)::float AS best_score
       FROM speed_tests
+      WHERE user_id = ${userId}
     `;
     return { tests, stats };
   } catch {
@@ -33,7 +35,7 @@ async function getData() {
 
 export default async function InicioPage() {
   const session = await getSession();
-  const { tests, stats } = await getData();
+  const { tests, stats } = await getData(session?.userId ?? 0);
 
   const avgScore = stats.avg_score != null ? Math.round(Number(stats.avg_score) * 10) / 10 : null;
   const bestScore = stats.best_score != null ? Math.round(Number(stats.best_score) * 10) / 10 : null;
