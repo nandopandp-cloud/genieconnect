@@ -9,7 +9,7 @@ import { formatDateShort } from "@/lib/utils";
 async function getData() {
   try {
     const tests = await sql`
-      SELECT id, created_at, score
+      SELECT id, created_at, score, school_name
       FROM speed_tests
       ORDER BY created_at DESC
       LIMIT 5
@@ -149,7 +149,7 @@ export default async function InicioPage() {
                 </Link>
               </div>
             ) : (
-              (tests as { id: number; created_at: string; score: number | null }[]).map((t) => {
+              (tests as { id: number; created_at: string; score: number | null; school_name?: string | null }[]).map((t) => {
                 const scoreInfo = t.score != null ? getScoreInfo(t.score) : null;
                 return (
                   <div
@@ -158,9 +158,9 @@ export default async function InicioPage() {
                   >
                     <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-bold text-gray-800">
-                          Teste #{t.id}
+                          {t.school_name ?? `Teste #${t.id}`}
                         </span>
                         {scoreInfo && (
                           <span
@@ -174,6 +174,9 @@ export default async function InicioPage() {
                           </span>
                         )}
                       </div>
+                      {t.school_name && (
+                        <p className="text-xs text-gray-400 mt-0.5">Teste #{t.id}</p>
+                      )}
                     </div>
                     <span className="text-xs text-gray-400 flex-shrink-0">
                       {formatDateShort(t.created_at)}

@@ -38,4 +38,5 @@ export interface HistoryTest {
   quiz_results: QuizAnswer[] | null;
   min_ping_ms: number | null;
   max_ping_ms: number | null;
+  school_name?: string | null;
 }

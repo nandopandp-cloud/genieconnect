@@ -14,10 +14,11 @@ function formatDateFilename(d: Date) {
 
 export function downloadCSV(tests: HistoryTest[]): void {
   const BOM = "\uFEFF";
-  const headers = ["#", "Data", "Conexão", "Score", "Ping (ms)", "Jitter (ms)", "Download (Mbps)", "Upload (Mbps)"];
+  const headers = ["#", "Data", "Escola", "Conexão", "Score", "Ping (ms)", "Jitter (ms)", "Download (Mbps)", "Upload (Mbps)"];
   const rows = tests.map((t, i) => [
     i + 1,
     formatDate(t.created_at),
+    t.school_name ?? "—",
     connectionLabel(t.connection_type, t.effective_type),
     t.score != null ? Number(t.score).toFixed(1) : "—",
     Number(t.ping_ms).toFixed(1),
@@ -66,6 +67,7 @@ export function triggerAllPDF(tests: HistoryTest[]): void {
     return `<tr>
       <td>${i + 1}</td>
       <td>${formatDate(t.created_at)}</td>
+      <td>${t.school_name ?? "—"}</td>
       <td>${conn}</td>
       <td class="score">${score}</td>
       <td>${ping}</td>
@@ -103,7 +105,7 @@ tr:last-child td { border-bottom: none; }
 </div>
 <table>
   <thead><tr>
-    <th>#</th><th>Data</th><th>Conexão</th><th>Score</th><th>Ping (ms)</th><th>Jitter (ms)</th><th>Download (Mbps)</th>
+    <th>#</th><th>Data</th><th>Escola</th><th>Conexão</th><th>Score</th><th>Ping (ms)</th><th>Jitter (ms)</th><th>Download (Mbps)</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>

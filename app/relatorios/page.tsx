@@ -12,7 +12,7 @@ async function getData() {
   try {
     const tests = (await sql`
       SELECT id, created_at, connection_type, effective_type, ping_ms, jitter_ms,
-             download_mbps, upload_mbps, score, quiz_results, min_ping_ms, max_ping_ms
+             download_mbps, upload_mbps, score, quiz_results, min_ping_ms, max_ping_ms, school_name
       FROM speed_tests ORDER BY created_at DESC LIMIT 50
     `) as HistoryTest[];
     const [stats] = await sql`

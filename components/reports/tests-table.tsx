@@ -57,6 +57,9 @@ export function TestsTable({ tests }: { tests: HistoryTest[] }) {
                 <SortBtn k="created_at" label="Data" />
               </th>
               <th className="text-left px-5 py-3 text-xs text-gray-400 font-semibold uppercase tracking-wider">
+                Escola
+              </th>
+              <th className="text-left px-5 py-3 text-xs text-gray-400 font-semibold uppercase tracking-wider">
                 <SortBtn k="score" label="Score" />
               </th>
               <th className="text-left px-5 py-3 text-xs text-gray-400 font-semibold uppercase tracking-wider">
@@ -77,7 +80,7 @@ export function TestsTable({ tests }: { tests: HistoryTest[] }) {
           <tbody>
             {sorted.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">
+                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
                   Nenhum teste realizado ainda.
                 </td>
               </tr>
@@ -93,6 +96,13 @@ export function TestsTable({ tests }: { tests: HistoryTest[] }) {
                   >
                     <td className="px-5 py-3.5 text-gray-500 text-xs">
                       {formatDateShort(t.created_at)}
+                    </td>
+                    <td className="px-5 py-3.5 text-xs max-w-[140px]">
+                      {t.school_name ? (
+                        <span className="text-gray-700 font-medium truncate block">{t.school_name}</span>
+                      ) : (
+                        <span className="text-gray-300 italic">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5">
                       {scoreInfo ? (
