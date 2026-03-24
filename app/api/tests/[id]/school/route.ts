@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import sql from "@/lib/db";
 
 export async function PATCH(
@@ -11,6 +12,9 @@ export async function PATCH(
       UPDATE speed_tests SET school_name = ${schoolName ?? null}
       WHERE id = ${parseInt(id, 10)}
     `;
+    revalidatePath("/inicio");
+    revalidatePath("/relatorios");
+    revalidatePath(`/relatorios/${id}`);
     return Response.json({ ok: true });
   } catch (err) {
     return Response.json({ error: String(err) }, { status: 500 });
