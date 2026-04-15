@@ -12,21 +12,101 @@ function formatDateFilename(d: Date) {
   return d.toISOString().slice(0, 19).replace(/[T:]/g, "-");
 }
 
+// ─── Rubricas (fonte única, espelho do lib/score.ts) ────────────────────────
+// Duplicadas aqui para evitar import de módulo server-only em contexto client.
+const RUBRICS = [
+  {
+    label: "Excelente",
+    range: "80 – 100",
+    color: "#10B981",
+    bgColor: "#ECFDF5",
+    guidance: "Sua conexão está em ótimas condições. A infraestrutura de rede suporta uso simultâneo intenso, transmissão de vídeo em alta definição e ferramentas digitais interativas sem interrupções. Continue monitorando periodicamente para garantir a estabilidade.",
+  },
+  {
+    label: "Boa",
+    range: "65 – 79",
+    color: "#3B82F6",
+    bgColor: "#EFF6FF",
+    guidance: "Sua conexão é adequada para a maioria das atividades educacionais. Pequenas melhorias no roteador ou no plano de internet podem elevar ainda mais a experiência dos estudantes, especialmente em atividades com vídeo em tempo real.",
+  },
+  {
+    label: "Moderada",
+    range: "45 – 64",
+    color: "#F59E0B",
+    bgColor: "#FFFBEB",
+    guidance: "Sua conexão apresenta desempenho intermediário. É possível utilizar ferramentas digitais básicas, mas atividades com streaming de vídeo ou uso simultâneo por muitos estudantes podem sofrer travamentos. Avalie a atualização do plano ou a otimização do roteador.",
+  },
+  {
+    label: "Fraca",
+    range: "0 – 44",
+    color: "#EF4444",
+    bgColor: "#FEF2F2",
+    guidance: "Atenção: sua conexão está abaixo do mínimo recomendado para uso educacional em massa. Realize ajustes urgentes na infraestrutura de rede. A velocidade e estabilidade atuais não são adequadas para suportar o uso simultâneo dos seus estudantes.",
+  },
+];
+
+function getRubric(score: number | null) {
+  const s = score != null ? Number(score) : -1;
+  if (s >= 80) return RUBRICS[0];
+  if (s >= 65) return RUBRICS[1];
+  if (s >= 45) return RUBRICS[2];
+  return RUBRICS[3];
+}
+
+// ─── HTML para a tabela de legenda (usada nos dois PDFs) ────────────────────
+const LEGEND_HTML = `
+<div style="margin-top:24px;margin-bottom:24px">
+  <div style="font-size:13px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Legenda de Rubricas</div>
+  <table style="width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;border:1px solid #E5E7EB">
+    <thead>
+      <tr style="background:#F9FAFB;border-bottom:1px solid #E5E7EB">
+        <th style="padding:8px 14px;text-align:left;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Rubrica</th>
+        <th style="padding:8px 14px;text-align:left;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Score</th>
+        <th style="padding:8px 14px;text-align:left;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">O que significa para sua escola</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${RUBRICS.map((r, i) => `
+      <tr style="border-bottom:1px solid #F3F4F6;background:${i % 2 !== 0 ? "#F9FAFB" : "white"}">
+        <td style="padding:9px 14px">
+          <span style="background:${r.color};color:white;font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px">${r.label}</span>
+        </td>
+        <td style="padding:9px 14px;font-size:12px;color:#6B7280;font-weight:600;white-space:nowrap">${r.range}</td>
+        <td style="padding:9px 14px;font-size:12px;color:#374151;line-height:1.5">${r.guidance}</td>
+      </tr>`).join("")}
+    </tbody>
+  </table>
+</div>`;
+
+// ─── CSV ─────────────────────────────────────────────────────────────────────
 export function downloadCSV(tests: HistoryTest[]): void {
   const BOM = "\uFEFF";
-  const headers = ["#", "Data", "Escola", "Conexão", "Score", "Ping (ms)", "Jitter (ms)", "Download (Mbps)", "Upload (Mbps)"];
-  const rows = tests.map((t, i) => [
-    i + 1,
-    formatDate(t.created_at),
-    t.school_name ?? "—",
-    connectionLabel(t.connection_type, t.effective_type),
-    t.score != null ? Number(t.score).toFixed(1) : "—",
-    Number(t.ping_ms).toFixed(1),
-    Number(t.jitter_ms).toFixed(1),
-    Number(t.download_mbps).toFixed(2),
-    Number(t.upload_mbps).toFixed(2),
-  ]);
-  const csv = BOM + [headers, ...rows].map((r) => r.join(",")).join("\n");
+  const headers = ["#", "Data", "Escola", "Conexão", "Score", "Rubrica", "Ping (ms)", "Jitter (ms)", "Download (Mbps)", "Upload (Mbps)", "Orientação"];
+  const rows = tests.map((t, i) => {
+    const rubric = getRubric(t.score);
+    return [
+      i + 1,
+      formatDate(t.created_at),
+      t.school_name ?? "—",
+      connectionLabel(t.connection_type, t.effective_type),
+      t.score != null ? Number(t.score).toFixed(1) : "—",
+      rubric.label,
+      Number(t.ping_ms).toFixed(1),
+      Number(t.jitter_ms).toFixed(1),
+      Number(t.download_mbps).toFixed(2),
+      Number(t.upload_mbps).toFixed(2),
+      `"${rubric.guidance.replace(/"/g, '""')}"`,
+    ];
+  });
+
+  const legendSection = [
+    [],
+    ["LEGENDA DE RUBRICAS"],
+    ["Rubrica", "Score", "Orientação"],
+    ...RUBRICS.map((r) => [r.label, r.range, `"${r.guidance.replace(/"/g, '""')}"`]),
+  ];
+
+  const csv = BOM + [headers, ...rows, ...legendSection].map((r) => r.join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -36,26 +116,37 @@ export function downloadCSV(tests: HistoryTest[]): void {
   URL.revokeObjectURL(url);
 }
 
+// ─── XLSX ────────────────────────────────────────────────────────────────────
 export async function downloadXLSX(tests: HistoryTest[]): Promise<void> {
   const XLSX = await import("xlsx");
   const ws = XLSX.utils.aoa_to_sheet([
-    ["#", "Data", "Conexão", "Score", "Ping (ms)", "Jitter (ms)", "Download (Mbps)", "Upload (Mbps)"],
-    ...tests.map((t, i) => [
-      i + 1,
-      formatDate(t.created_at),
-      connectionLabel(t.connection_type, t.effective_type),
-      t.score != null ? Number(t.score) : null,
-      Number(t.ping_ms),
-      Number(t.jitter_ms),
-      Number(t.download_mbps),
-      Number(t.upload_mbps),
-    ]),
+    ["#", "Data", "Conexão", "Score", "Rubrica", "Orientação", "Ping (ms)", "Jitter (ms)", "Download (Mbps)", "Upload (Mbps)"],
+    ...tests.map((t, i) => {
+      const rubric = getRubric(t.score);
+      return [
+        i + 1,
+        formatDate(t.created_at),
+        connectionLabel(t.connection_type, t.effective_type),
+        t.score != null ? Number(t.score) : null,
+        rubric.label,
+        rubric.guidance,
+        Number(t.ping_ms),
+        Number(t.jitter_ms),
+        Number(t.download_mbps),
+        Number(t.upload_mbps),
+      ];
+    }),
+    [],
+    ["LEGENDA DE RUBRICAS"],
+    ["Rubrica", "Score", "Orientação"],
+    ...RUBRICS.map((r) => [r.label, r.range, r.guidance]),
   ]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Relatórios");
   XLSX.writeFile(wb, `genieconnect-relatorios-${formatDateFilename(new Date())}.xlsx`);
 }
 
+// ─── PDF — todos os relatórios ───────────────────────────────────────────────
 export function triggerAllPDF(tests: HistoryTest[]): void {
   const now = new Date();
   const rows = tests.map((t, i) => {
@@ -65,12 +156,14 @@ export function triggerAllPDF(tests: HistoryTest[]): void {
     const dl = Number(t.download_mbps).toFixed(2);
     const ul = Number(t.upload_mbps ?? 0).toFixed(2);
     const conn = connectionLabel(t.connection_type, t.effective_type);
+    const rubric = getRubric(t.score);
     return `<tr>
       <td>${i + 1}</td>
       <td>${formatDate(t.created_at)}</td>
       <td>${t.school_name ?? "—"}</td>
       <td>${conn}</td>
-      <td class="score">${score}</td>
+      <td style="color:${rubric.color};font-weight:700">${score}</td>
+      <td><span style="background:${rubric.color};color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px">${rubric.label}</span></td>
       <td>${ping}</td>
       <td>${jitter}</td>
       <td>${dl}</td>
@@ -94,7 +187,6 @@ table { width: 100%; border-collapse: collapse; background: white; border-radius
 th { background: #F9FAFB; text-align: left; padding: 10px 14px; font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #E5E7EB; }
 td { padding: 10px 14px; font-size: 13px; color: #374151; border-bottom: 1px solid #F3F4F6; }
 tr:last-child td { border-bottom: none; }
-.score { color: #3B82F6; font-weight: 700; }
 .footer { text-align: center; color: #9CA3AF; font-size: 12px; margin-top: 24px; }
 </style></head>
 <body>
@@ -107,10 +199,11 @@ tr:last-child td { border-bottom: none; }
 </div>
 <table>
   <thead><tr>
-    <th>#</th><th>Data</th><th>Escola</th><th>Conexão</th><th>Score</th><th>Ping (ms)</th><th>Jitter (ms)</th><th>Download (Mbps)</th><th>Upload (Mbps)</th>
+    <th>#</th><th>Data</th><th>Escola</th><th>Conexão</th><th>Score</th><th>Rubrica</th><th>Ping (ms)</th><th>Jitter (ms)</th><th>Download (Mbps)</th><th>Upload (Mbps)</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>
+${LEGEND_HTML}
 <div class="footer">GenieConnect — Diagnóstico de Conexão Escolar</div>
 </body></html>`;
 
@@ -118,6 +211,7 @@ tr:last-child td { border-bottom: none; }
   if (win) { win.document.write(html); win.document.close(); win.focus(); setTimeout(() => win.print(), 600); }
 }
 
+// ─── PDF — relatório individual ───────────────────────────────────────────────
 export function triggerPDF(test: HistoryTest): void {
   const date = formatDate(test.created_at);
   const scoreNum = test.score != null ? Number(test.score) : null;
@@ -128,15 +222,9 @@ export function triggerPDF(test: HistoryTest): void {
   const dlMbps = Number(test.download_mbps);
   const ulMbps = Number(test.upload_mbps ?? 0);
 
-  // Score color
-  const scoreColor = scoreNum == null ? "#6B7280"
-    : scoreNum >= 80 ? "#10B981"
-    : scoreNum >= 65 ? "#3B82F6"
-    : scoreNum >= 45 ? "#F59E0B"
-    : "#EF4444";
-  const scoreLabel = scoreNum == null ? "" : scoreNum >= 80 ? "Excelente" : scoreNum >= 65 ? "Boa" : scoreNum >= 45 ? "Moderada" : "Fraca";
+  const rubric = getRubric(scoreNum);
 
-  // Ping color
+  // Ping color/label
   const pingColor = pingMs <= 50 ? "#10B981" : pingMs <= 100 ? "#3B82F6" : pingMs <= 250 ? "#F59E0B" : "#EF4444";
   const pingLabel = pingMs <= 50 ? "Ótimo" : pingMs <= 100 ? "Bom" : pingMs <= 250 ? "Moderado" : "Alto";
 
@@ -153,7 +241,7 @@ export function triggerPDF(test: HistoryTest): void {
   const pingMin = test.min_ping_ms != null ? Number(test.min_ping_ms).toFixed(1) : "—";
   const pingMax = test.max_ping_ms != null ? Number(test.max_ping_ms).toFixed(1) : "—";
 
-  // Header right side — school name or nothing
+  // Header right side
   const headerRight = test.school_name
     ? `<div style="text-align:right">
         <div style="font-size:20px;font-weight:700;color:white">${test.school_name}</div>
@@ -209,6 +297,7 @@ body { background: #EEF2F7; color: #111827; font-family: -apple-system, BlinkMac
 .val-sm { font-size: 20px; font-weight: 700; color: #111827; line-height: 1; }
 .unit { font-size: 13px; color: #9CA3AF; font-weight: 400; margin-left: 2px; }
 .sub { font-size: 12px; margin-top: 4px; }
+.guidance { font-size: 11px; color: #374151; margin-top: 8px; line-height: 1.5; padding-top: 8px; border-top: 1px solid #E5E7EB; }
 .section-title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
 .footer { text-align: center; color: #9CA3AF; font-size: 12px; margin-top: 28px; }
 </style></head>
@@ -225,8 +314,9 @@ body { background: #EEF2F7; color: #111827; font-family: -apple-system, BlinkMac
 <div class="grid4">
   <div class="card">
     <div class="lbl">Score de Qualidade</div>
-    <div class="val" style="color:${scoreColor}">${score}</div>
-    <div class="sub" style="color:${scoreColor};font-weight:600">${scoreLabel}</div>
+    <div class="val" style="color:${rubric.color}">${score}</div>
+    <div class="sub" style="color:${rubric.color};font-weight:700">${rubric.label}</div>
+    <div class="guidance">${rubric.guidance}</div>
   </div>
   <div class="card">
     <div class="lbl">Ping médio</div>
@@ -269,6 +359,7 @@ body { background: #EEF2F7; color: #111827; font-family: -apple-system, BlinkMac
   </div>
 </div>
 
+${LEGEND_HTML}
 ${quizSection}
 <div class="footer">GenieConnect — Diagnóstico de Conexão Escolar</div>
 </body></html>`;

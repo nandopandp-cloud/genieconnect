@@ -21,14 +21,54 @@ export interface ScoreInfo {
   color: string;
   bgColor: string;
   textColor: string;
+  /** Range descritivo para a legenda */
+  range: string;
+  /** Orientação educativa exibida no relatório */
+  guidance: string;
 }
 
 export function getScoreInfo(score: number): ScoreInfo {
-  if (score >= 80) return { label: "Excelente", color: "#10B981", bgColor: "#ECFDF5", textColor: "#065F46" };
-  if (score >= 65) return { label: "Boa", color: "#3B82F6", bgColor: "#EFF6FF", textColor: "#1E40AF" };
-  if (score >= 45) return { label: "Moderada", color: "#F59E0B", bgColor: "#FFFBEB", textColor: "#92400E" };
-  return { label: "Fraca", color: "#EF4444", bgColor: "#FEF2F2", textColor: "#991B1B" };
+  if (score >= 80) return {
+    label: "Excelente",
+    color: "#10B981",
+    bgColor: "#ECFDF5",
+    textColor: "#065F46",
+    range: "80 – 100",
+    guidance: "Sua conexão está em ótimas condições. A infraestrutura de rede suporta uso simultâneo intenso, transmissão de vídeo em alta definição e ferramentas digitais interativas sem interrupções. Continue monitorando periodicamente para garantir a estabilidade.",
+  };
+  if (score >= 65) return {
+    label: "Boa",
+    color: "#3B82F6",
+    bgColor: "#EFF6FF",
+    textColor: "#1E40AF",
+    range: "65 – 79",
+    guidance: "Sua conexão é adequada para a maioria das atividades educacionais. Pequenas melhorias no roteador ou no plano de internet podem elevar ainda mais a experiência dos estudantes, especialmente em atividades com vídeo em tempo real.",
+  };
+  if (score >= 45) return {
+    label: "Moderada",
+    color: "#F59E0B",
+    bgColor: "#FFFBEB",
+    textColor: "#92400E",
+    range: "45 – 64",
+    guidance: "Sua conexão apresenta desempenho intermediário. É possível utilizar ferramentas digitais básicas, mas atividades com streaming de vídeo ou uso simultâneo por muitos estudantes podem sofrer travamentos. Avalie a atualização do plano ou a otimização do roteador.",
+  };
+  return {
+    label: "Fraca",
+    color: "#EF4444",
+    bgColor: "#FEF2F2",
+    textColor: "#991B1B",
+    range: "0 – 44",
+    guidance: "Atenção: sua conexão está abaixo do mínimo recomendado para uso educacional em massa. Realize ajustes urgentes na infraestrutura de rede. A velocidade e estabilidade atuais não são adequadas para suportar o uso simultâneo dos seus estudantes.",
+  };
 }
+
+/** Todas as rubricas em ordem decrescente — use para renderizar a legenda. */
+export const SCORE_RUBRICS: ScoreInfo[] = [
+  getScoreInfo(100),
+  getScoreInfo(70),
+  getScoreInfo(50),
+  getScoreInfo(0),
+];
 
 export function getPingInfo(pingMs: number): { label: string; color: string } {
   if (pingMs <= 50) return { label: "Ótimo", color: "#10B981" };

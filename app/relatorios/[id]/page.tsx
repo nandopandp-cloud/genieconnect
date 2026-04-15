@@ -8,7 +8,7 @@ import { SchoolCard } from "@/components/reports/school-card";
 import { ConnectionBadge } from "@/components/speed-test/connection-badge";
 import { getSession } from "@/lib/auth";
 import sql from "@/lib/db";
-import { getScoreInfo, getPingInfo, getDownloadInfo, getUploadInfo } from "@/lib/score";
+import { getScoreInfo, getPingInfo, getDownloadInfo, getUploadInfo, SCORE_RUBRICS } from "@/lib/score";
 import { formatDate } from "@/lib/utils";
 import { QUESTIONS } from "@/lib/quiz-data";
 import type { HistoryTest, QuizAnswer, ConnectionType, EffectiveType } from "@/lib/types";
@@ -95,7 +95,7 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
         {/* 4 main metric cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {/* Qualidade da Rede */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
                 <Wifi size={15} className="text-gray-500" />
@@ -110,8 +110,11 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
             >
               {test.score != null ? Number(test.score).toFixed(1) : "—"}
             </p>
-            <p className="text-sm font-medium" style={{ color: scoreInfo.color }}>
+            <p className="text-sm font-semibold mb-2" style={{ color: scoreInfo.color }}>
               {scoreInfo.label}
+            </p>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              {scoreInfo.guidance}
             </p>
           </div>
 
@@ -269,6 +272,35 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
                 {scoreInfo.label}
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Rubric legend */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+          <div className="mb-4">
+            <h2 className="font-bold text-gray-800">Legenda de Rubricas</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Entenda o que cada classificação de qualidade significa para sua rede escolar.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            {SCORE_RUBRICS.map((r) => (
+              <div
+                key={r.label}
+                className="rounded-xl p-4 border"
+                style={{ background: r.bgColor, borderColor: r.color + "33" }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: r.color, color: "#fff" }}>
+                    {r.label}
+                  </span>
+                  <span className="text-[10px] font-semibold text-gray-400 tabular-nums">{r.range}</span>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: r.textColor }}>
+                  {r.guidance}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
