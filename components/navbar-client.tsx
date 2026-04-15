@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, BarChart2, ChevronDown, LogOut } from "lucide-react";
+import { Home, BarChart2, ChevronDown, LogOut } from "lucide-react";
 
 interface Props {
   userName: string;
@@ -42,7 +42,7 @@ export function NavbarClient({ userName, userEmail }: Props) {
                 : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
           >
-            <LayoutDashboard size={16} />
+            <Home size={16} />
             Início
             {isActive("/inicio") && (
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-sky-500 rounded-full" />

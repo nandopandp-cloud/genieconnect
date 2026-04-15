@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Wifi, Activity, Zap, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, Wifi, Activity, Zap, Upload, CheckCircle2, XCircle } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { ResponseChart } from "@/components/reports/response-chart";
 import { SessionHeader } from "@/components/reports/session-header";
@@ -8,7 +8,7 @@ import { SchoolCard } from "@/components/reports/school-card";
 import { ConnectionBadge } from "@/components/speed-test/connection-badge";
 import { getSession } from "@/lib/auth";
 import sql from "@/lib/db";
-import { getScoreInfo, getPingInfo, getDownloadInfo } from "@/lib/score";
+import { getScoreInfo, getPingInfo, getDownloadInfo, getUploadInfo } from "@/lib/score";
 import { formatDate } from "@/lib/utils";
 import { QUESTIONS } from "@/lib/quiz-data";
 import type { HistoryTest, QuizAnswer, ConnectionType, EffectiveType } from "@/lib/types";
@@ -45,6 +45,8 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
   const scoreInfo = getScoreInfo(test.score ?? 0);
   const pingInfo = getPingInfo(Number(test.ping_ms));
   const dlInfo = getDownloadInfo(Number(test.download_mbps));
+  const ulMbps = Number(test.upload_mbps ?? 0);
+  const ulInfo = getUploadInfo(ulMbps);
   const quizAnswers: QuizAnswer[] = Array.isArray(test.quiz_results) ? test.quiz_results as QuizAnswer[] : [];
   const pageTitle = test.school_name
     ? `${test.school_name} — Teste ${test.school_rank ?? test.id}`
@@ -90,8 +92,8 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
         {/* School card */}
         <SchoolCard testId={test.id} initialSchool={test.school_name} />
 
-        {/* 3 main metric cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* 4 main metric cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {/* Qualidade da Rede */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-center gap-2 mb-3">
@@ -151,6 +153,23 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
             </p>
             <p className="text-sm text-gray-500">{dlInfo.label}</p>
           </div>
+
+          {/* Upload */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                <Upload size={15} className="text-violet-500" />
+              </div>
+              <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+                Upload
+              </span>
+            </div>
+            <p className="text-3xl font-bold text-violet-600 mb-1">
+              {ulMbps.toFixed(2)}
+              <span className="text-sm font-normal text-gray-400 ml-1">Mbps</span>
+            </p>
+            <p className="text-sm text-gray-500">{ulInfo.label}</p>
+          </div>
         </div>
 
         {/* Wi-Fi indicators card */}
@@ -160,7 +179,7 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
             <div>{connectionLabel}</div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* Ping médio */}
             <div className="bg-gray-50 rounded-xl p-4">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
@@ -203,16 +222,28 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
               </p>
             </div>
 
-            {/* Velocidade */}
+            {/* Download */}
             <div className="bg-gray-50 rounded-xl p-4">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
-                Velocidade
+                Download
               </p>
               <p className="text-xl font-bold text-emerald-600">
                 {Number(test.download_mbps).toFixed(2)}
                 <span className="text-xs font-normal text-gray-400 ml-1">Mbps</span>
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">Download</p>
+              <p className="text-xs text-gray-400 mt-0.5">{dlInfo.label}</p>
+            </div>
+
+            {/* Upload */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
+                Upload
+              </p>
+              <p className="text-xl font-bold text-violet-600">
+                {ulMbps.toFixed(2)}
+                <span className="text-xs font-normal text-gray-400 ml-1">Mbps</span>
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">{ulInfo.label}</p>
             </div>
 
             {/* Tipo de rede */}

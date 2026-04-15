@@ -43,3 +43,11 @@ export function getDownloadInfo(mbps: number): { label: string } {
   if (mbps >= 5) return { label: "Velocidade moderada" };
   return { label: "Velocidade baixa" };
 }
+
+export function getUploadInfo(mbps: number): { label: string } {
+  if (mbps >= 50) return { label: "Upload excelente" };
+  if (mbps >= 10) return { label: "Upload bom" };
+  if (mbps >= 2)  return { label: "Upload moderado" };
+  if (mbps > 0)   return { label: "Upload baixo" };
+  return { label: "Não medido" };
+}

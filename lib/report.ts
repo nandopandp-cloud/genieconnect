@@ -63,6 +63,7 @@ export function triggerAllPDF(tests: HistoryTest[]): void {
     const ping = Number(t.ping_ms).toFixed(1);
     const jitter = Number(t.jitter_ms).toFixed(1);
     const dl = Number(t.download_mbps).toFixed(2);
+    const ul = Number(t.upload_mbps ?? 0).toFixed(2);
     const conn = connectionLabel(t.connection_type, t.effective_type);
     return `<tr>
       <td>${i + 1}</td>
@@ -73,6 +74,7 @@ export function triggerAllPDF(tests: HistoryTest[]): void {
       <td>${ping}</td>
       <td>${jitter}</td>
       <td>${dl}</td>
+      <td style="color:#7C3AED;font-weight:600">${ul}</td>
     </tr>`;
   }).join("");
 
@@ -105,7 +107,7 @@ tr:last-child td { border-bottom: none; }
 </div>
 <table>
   <thead><tr>
-    <th>#</th><th>Data</th><th>Escola</th><th>Conexão</th><th>Score</th><th>Ping (ms)</th><th>Jitter (ms)</th><th>Download (Mbps)</th>
+    <th>#</th><th>Data</th><th>Escola</th><th>Conexão</th><th>Score</th><th>Ping (ms)</th><th>Jitter (ms)</th><th>Download (Mbps)</th><th>Upload (Mbps)</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>
@@ -124,6 +126,7 @@ export function triggerPDF(test: HistoryTest): void {
   const pingMs = Number(test.ping_ms);
   const jitterMs = Number(test.jitter_ms);
   const dlMbps = Number(test.download_mbps);
+  const ulMbps = Number(test.upload_mbps ?? 0);
 
   // Score color
   const scoreColor = scoreNum == null ? "#6B7280"
@@ -139,6 +142,9 @@ export function triggerPDF(test: HistoryTest): void {
 
   // Download label
   const dlLabel = dlMbps >= 100 ? "Velocidade alta" : dlMbps >= 25 ? "Velocidade boa" : dlMbps >= 5 ? "Velocidade moderada" : "Velocidade baixa";
+
+  // Upload label
+  const ulLabel = ulMbps >= 50 ? "Upload excelente" : ulMbps >= 10 ? "Upload bom" : ulMbps >= 2 ? "Upload moderado" : ulMbps > 0 ? "Upload baixo" : "Não medido";
 
   // Jitter label
   const jitterLabel = jitterMs < 10 ? "Estável" : jitterMs < 30 ? "Moderado" : "Instável";
@@ -194,8 +200,8 @@ body { background: #EEF2F7; color: #111827; font-family: -apple-system, BlinkMac
 .brand { font-size: 24px; font-weight: 800; }
 .brand span { color: #38BDF8; }
 .subtitle { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 4px; }
-.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
-.grid2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 14px; }
+.grid2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
 .card { background: white; border-radius: 12px; padding: 18px 20px; border: 1px solid #E5E7EB; }
 .card-sm { background: #F9FAFB; border-radius: 10px; padding: 14px 16px; border: 1px solid #E5E7EB; }
 .lbl { font-size: 10px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; margin-bottom: 6px; }
@@ -216,7 +222,7 @@ body { background: #EEF2F7; color: #111827; font-family: -apple-system, BlinkMac
 </div>
 
 <div class="section-title">Métricas Principais</div>
-<div class="grid3">
+<div class="grid4">
   <div class="card">
     <div class="lbl">Score de Qualidade</div>
     <div class="val" style="color:${scoreColor}">${score}</div>
@@ -231,6 +237,11 @@ body { background: #EEF2F7; color: #111827; font-family: -apple-system, BlinkMac
     <div class="lbl">Download</div>
     <div class="val" style="color:#059669">${dlMbps.toFixed(2)}<span class="unit">Mbps</span></div>
     <div class="sub" style="color:#6B7280">${dlLabel}</div>
+  </div>
+  <div class="card">
+    <div class="lbl">Upload</div>
+    <div class="val" style="color:#7C3AED">${ulMbps.toFixed(2)}<span class="unit">Mbps</span></div>
+    <div class="sub" style="color:#6B7280">${ulLabel}</div>
   </div>
 </div>
 
@@ -250,6 +261,11 @@ body { background: #EEF2F7; color: #111827; font-family: -apple-system, BlinkMac
     <div class="lbl">Tipo de rede</div>
     <div class="val-sm" style="font-size:18px;text-transform:capitalize">${test.effective_type}</div>
     <div class="sub" style="color:#9CA3AF;text-transform:capitalize">${test.connection_type}</div>
+  </div>
+  <div class="card-sm">
+    <div class="lbl">Conexão</div>
+    <div class="val-sm" style="font-size:18px;text-transform:capitalize">${test.connection_type}</div>
+    <div class="sub" style="color:#9CA3AF;text-transform:capitalize">${test.effective_type}</div>
   </div>
 </div>
 
