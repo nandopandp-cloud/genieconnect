@@ -114,9 +114,9 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-3 mb-4">
             <span
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide"
+              className="px-4 py-2 rounded-lg text-lg font-bold uppercase tracking-wide"
               style={{ background: scoreInfo.bgColor, color: scoreInfo.textColor }}
             >
               {scoreInfo.label}
