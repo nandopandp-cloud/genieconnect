@@ -14,8 +14,6 @@ export function QuizShell() {
   const router = useRouter();
   const startedRef = useRef(false);
 
-  // Call start() exactly once on mount — using a ref guard prevents
-  // a re-run if the parent re-renders or start reference changes
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
@@ -24,7 +22,7 @@ export function QuizShell() {
 
   useEffect(() => {
     if (state.phase === "done" && state.savedId) {
-      const timer = setTimeout(() => router.push(`/relatorios/${state.savedId}`), 1000);
+      const timer = setTimeout(() => router.push(`/relatorios/${state.savedId}`), 2200);
       return () => clearTimeout(timer);
     }
   }, [state.phase, state.savedId, router]);
@@ -32,9 +30,7 @@ export function QuizShell() {
   if (state.phase === "idle" || state.phase === "measuring") {
     const isSpeedPhase = state.phase === "measuring" && state.answers.length === QUESTIONS.length;
     if (isSpeedPhase) {
-      // Download finished (>0) and upload already started → show upload gauge.
-      const isUploadPhase =
-        state.downloadMbps != null || state.liveUpload > 0;
+      const isUploadPhase = state.downloadMbps != null || state.liveUpload > 0;
       const mbps = isUploadPhase ? state.liveUpload : state.liveDownload;
       return (
         <SpeedometerScreen
@@ -46,17 +42,23 @@ export function QuizShell() {
     return (
       <MeasuringScreen
         message="Medindo sua conexão..."
-        subMessage="O Genie está coletando ping, jitter e velocidade.\nIsso leva apenas alguns segundos."
-        pills={["Ping...", "Jitter...", "Download...", "Tipo de rede..."]}
+        subMessage="O Genie está coletando ping, jitter e velocidade. Isso leva apenas alguns segundos."
+        pills={["Ping...", "Jitter...", "Download...", "Upload...", "Tipo de rede..."]}
       />
     );
   }
 
   if (state.phase === "error") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 animate-fade-up">
+        <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4 animate-scale-in">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M12 8v4m0 4h.01" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" />
+            <circle cx="12" cy="12" r="10" stroke="#EF4444" strokeWidth="2" />
+          </svg>
+        </div>
         <p className="text-red-500 text-lg font-semibold mb-2">Erro durante o diagnóstico</p>
-        <p className="text-gray-500 text-sm">{state.error}</p>
+        <p className="text-gray-500 text-sm max-w-sm">{state.error}</p>
       </div>
     );
   }
@@ -65,16 +67,32 @@ export function QuizShell() {
     const scoreInfo = state.score != null ? getScoreInfo(state.score) : null;
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <Mascot size={120} className="mb-5 animate-genie-pulse" />
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 max-w-sm w-full">
-          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M5 13l4 4L19 7" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Mascot celebration */}
+        <div className="animate-scale-in mb-5">
+          <Mascot size={120} className="animate-genie-float" />
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 max-w-sm w-full animate-fade-up delay-150">
+          {/* Checkmark */}
+          <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4 animate-scale-in delay-200">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M5 13l4 4L19 7"
+                stroke="#10B981"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="animate-check-pop"
+              />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-1">Diagnóstico concluído!</h2>
+
+          <h2 className="text-xl font-bold text-gray-800 mb-1 animate-fade-up delay-250">
+            Diagnóstico concluído!
+          </h2>
+
           {scoreInfo && state.score != null && (
-            <div className="mt-3 mb-4">
+            <div className="mt-3 mb-4 animate-scale-in delay-300">
               <span
                 className="inline-block px-4 py-1.5 rounded-full text-sm font-bold"
                 style={{ background: scoreInfo.bgColor, color: scoreInfo.textColor }}
@@ -83,7 +101,51 @@ export function QuizShell() {
               </span>
             </div>
           )}
-          <p className="text-sm text-gray-400">Redirecionando para o relatório...</p>
+
+          {/* Mini metrics row */}
+          {state.downloadMbps != null && (
+            <div className="flex justify-center gap-4 mb-4 animate-fade-up delay-350">
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-0.5">Ping</p>
+                <p className="text-sm font-bold text-gray-700">
+                  {state.pingMs != null ? `${Math.round(state.pingMs)}ms` : "—"}
+                </p>
+              </div>
+              <div className="w-px bg-gray-100" />
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-0.5">Download</p>
+                <p className="text-sm font-bold text-sky-600">
+                  {state.downloadMbps.toFixed(1)} Mbps
+                </p>
+              </div>
+              {state.uploadMbps != null && state.uploadMbps > 0 && (
+                <>
+                  <div className="w-px bg-gray-100" />
+                  <div className="text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-0.5">Upload</p>
+                    <p className="text-sm font-bold text-violet-600">
+                      {state.uploadMbps.toFixed(1)} Mbps
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <p className="text-sm text-gray-400 animate-fade-in delay-400">
+            Redirecionando para o relatório...
+          </p>
+
+          {/* Progress bar */}
+          <div className="mt-3 h-0.5 bg-gray-100 rounded-full overflow-hidden animate-fade-in delay-500">
+            <div
+              className="h-full rounded-full"
+              style={{
+                background: "linear-gradient(90deg, #0EA5E9, #38BDF8)",
+                animation: "progress-bar 2.2s linear forwards",
+              }}
+            />
+          </div>
         </div>
       </div>
     );
@@ -91,7 +153,9 @@ export function QuizShell() {
 
   const q = QUESTIONS[state.currentQuestion];
   return (
+    // key forces re-mount (and re-animation) on every new question
     <QuestionCard
+      key={state.currentQuestion}
       question={q}
       questionNumber={state.currentQuestion}
       total={QUESTIONS.length}

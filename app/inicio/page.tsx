@@ -43,16 +43,16 @@ export default async function InicioPage() {
   const bestScoreInfo = bestScore != null ? getScoreInfo(bestScore) : null;
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ background: "#F0F4F8" }}>
+    <div className="min-h-screen" style={{ background: "#F0F4F8" }}>
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         {/* Hero card */}
         <div
-          className="rounded-2xl p-8 mb-6 flex flex-col md:flex-row items-center justify-between gap-6"
+          className="rounded-2xl p-8 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-up"
           style={{ background: "linear-gradient(135deg, #0F172A 0%, #0A2040 100%)" }}
         >
-          <div className="flex-1">
+          <div className="flex-1 animate-slide-right delay-100">
             <p className="text-white/50 text-sm mb-1">Bem-vindo de volta,</p>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
               {session?.name ?? "Usuário"}!
@@ -62,22 +62,21 @@ export default async function InicioPage() {
             </p>
             <Link
               href="/diagnostico"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 shadow-lg"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg"
               style={{ background: "linear-gradient(135deg, #0EA5E9, #38BDF8)" }}
             >
               <Play size={16} fill="white" />
               Iniciar Novo Teste
             </Link>
           </div>
-          <div className="flex-shrink-0">
-            <Mascot size={180} />
+          <div className="flex-shrink-0 animate-slide-left delay-200">
+            <Mascot size={180} className="animate-genie-float" />
           </div>
         </div>
 
         {/* KPI cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {/* Testes realizados */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover-lift animate-fade-up delay-150">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-cyan-50 flex items-center justify-center flex-shrink-0">
                 <Wifi size={18} className="text-cyan-500" />
@@ -88,8 +87,7 @@ export default async function InicioPage() {
             <p className="text-xs text-gray-400">diagnósticos concluídos</p>
           </div>
 
-          {/* Score médio */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover-lift animate-fade-up delay-250">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-cyan-50 flex items-center justify-center flex-shrink-0">
                 <TrendingUp size={18} className="text-cyan-500" />
@@ -107,8 +105,7 @@ export default async function InicioPage() {
             {avgScore == null && <p className="text-xs text-gray-400">sem dados</p>}
           </div>
 
-          {/* Melhor score */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover-lift animate-fade-up delay-350">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
                 <Zap size={18} className="text-green-500" />
@@ -129,7 +126,7 @@ export default async function InicioPage() {
         </div>
 
         {/* Recent tests */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm animate-fade-up delay-400">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <div>
               <h2 className="font-bold text-gray-800">Testes Recentes</h2>
@@ -146,21 +143,24 @@ export default async function InicioPage() {
 
           <div className="divide-y divide-gray-50">
             {(tests as { id: number; created_at: string; score: number | null }[]).length === 0 ? (
-              <div className="px-6 py-10 text-center text-gray-400 text-sm">
+              <div className="px-6 py-10 text-center text-gray-400 text-sm animate-fade-in">
                 Nenhum teste realizado ainda.{" "}
                 <Link href="/diagnostico" className="text-sky-500 hover:underline">
                   Iniciar diagnóstico
                 </Link>
               </div>
             ) : (
-              (tests as { id: number; created_at: string; score: number | null; school_name?: string | null }[]).map((t) => {
+              (tests as { id: number; created_at: string; score: number | null; school_name?: string | null }[]).map((t, idx) => {
                 const scoreInfo = t.score != null ? getScoreInfo(t.score) : null;
                 return (
                   <div
                     key={t.id}
-                    className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors animate-slide-right"
+                    style={{ animationDelay: `${450 + idx * 60}ms` }}
                   >
-                    <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+                    <div className="relative flex-shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-blue-400" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-bold text-gray-800">
@@ -187,7 +187,7 @@ export default async function InicioPage() {
                     </span>
                     <Link
                       href={`/relatorios/${t.id}`}
-                      className="flex-shrink-0 text-gray-400 hover:text-sky-500 transition-colors"
+                      className="flex-shrink-0 text-gray-400 hover:text-sky-500 transition-colors hover:scale-110"
                     >
                       <ArrowRight size={16} />
                     </Link>

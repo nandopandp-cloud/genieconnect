@@ -53,19 +53,26 @@ export function SpeedometerScreen({ mbps, direction = "download" }: Props) {
   const gradStart = polarToXY(START_DEG, R);
   const gradEnd = polarToXY(START_DEG + Math.max(activeSweep, 60) * 0.6, R);
 
+  // Color theme: cyan for download, violet for upload
+  const arcColor = isUp ? "url(#spArcUp)" : "url(#spArc)";
+  const hubColor  = isUp ? "#8B5CF6" : "#0EA5E9";
+  const glowColor = isUp
+    ? "0 0 24px rgba(139,92,246,0.35)"
+    : "0 0 24px rgba(14,165,233,0.35)";
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-      <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-6">
+      <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-6 animate-fade-down">
         {isUp ? "Medindo velocidade de upload..." : "Medindo velocidade de download..."}
       </p>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-6 pt-6 pb-5">
-        <svg
-          width="288"
-          height="240"
-          viewBox="0 0 300 252"
-        >
+      <div
+        className="bg-white rounded-3xl border border-gray-100 px-6 pt-6 pb-5 animate-scale-in"
+        style={{ boxShadow: `0 4px 32px rgba(0,0,0,0.06), ${glowColor}` }}
+      >
+        <svg width="288" height="240" viewBox="0 0 300 252">
           <defs>
+            {/* Download gradient: sky blue */}
             <linearGradient
               id="spArc"
               gradientUnits="userSpaceOnUse"
@@ -76,6 +83,19 @@ export function SpeedometerScreen({ mbps, direction = "download" }: Props) {
             >
               <stop offset="0%" stopColor="#38BDF8" />
               <stop offset="100%" stopColor="#0EA5E9" />
+            </linearGradient>
+
+            {/* Upload gradient: violet */}
+            <linearGradient
+              id="spArcUp"
+              gradientUnits="userSpaceOnUse"
+              x1={gradStart.x}
+              y1={gradStart.y}
+              x2={gradEnd.x}
+              y2={gradEnd.y}
+            >
+              <stop offset="0%" stopColor="#A78BFA" />
+              <stop offset="100%" stopColor="#7C3AED" />
             </linearGradient>
           </defs>
 
@@ -93,7 +113,7 @@ export function SpeedometerScreen({ mbps, direction = "download" }: Props) {
             <path
               d={arcPath(START_DEG, activeSweep, R)}
               fill="none"
-              stroke="url(#spArc)"
+              stroke={arcColor}
               strokeWidth={TRACK_W}
               strokeLinecap="round"
             />
@@ -114,7 +134,7 @@ export function SpeedometerScreen({ mbps, direction = "download" }: Props) {
                 dominantBaseline="middle"
                 fontSize="9"
                 fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-                fill={passed ? "#0EA5E9" : "#9CA3AF"}
+                fill={passed ? hubColor : "#9CA3AF"}
               >
                 {v}
               </text>
@@ -124,13 +144,13 @@ export function SpeedometerScreen({ mbps, direction = "download" }: Props) {
           {/* Needle */}
           <polygon
             points={`${tip.x.toFixed(2)},${tip.y.toFixed(2)} ${b1.x.toFixed(2)},${b1.y.toFixed(2)} ${b2.x.toFixed(2)},${b2.y.toFixed(2)}`}
-            fill="#0EA5E9"
+            fill={hubColor}
             opacity="0.9"
           />
 
           {/* Hub */}
           <circle cx={CX} cy={CY} r="9" fill="#F0F4F8" />
-          <circle cx={CX} cy={CY} r="5" fill="#0EA5E9" />
+          <circle cx={CX} cy={CY} r="5" fill={hubColor} />
 
           {/* Value */}
           <text
@@ -152,7 +172,7 @@ export function SpeedometerScreen({ mbps, direction = "download" }: Props) {
             y={CY + 66}
             textAnchor="middle"
             fontSize="11"
-            fill="#0EA5E9"
+            fill={hubColor}
             fontFamily="-apple-system, sans-serif"
             letterSpacing="1"
             fontWeight="500"

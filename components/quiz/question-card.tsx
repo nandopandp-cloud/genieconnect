@@ -31,20 +31,35 @@ export function QuestionCard({ question, questionNumber, total, answers, selecte
     return `${m}:${sec}`;
   };
 
+  const isCorrectAnswer = selectedAnswer === question.correct;
+
   return (
-    <div className="w-full max-w-2xl mx-auto px-4">
+    // key on parent ensures this whole card re-animates on each new question
+    <div className="w-full max-w-2xl mx-auto px-4 animate-fade-up">
       {/* Status bar */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 animate-fade-in delay-75">
         <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-gray-200 shadow-sm text-sm text-gray-600">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-sky-500">
-            <path d="M1 6c0 0 4-4 11-4s11 4 11 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M5 10c0 0 3-3 7-3s7 3 7 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M9 14c0 0 1-1 3-1s3 1 3 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="12" cy="18" r="1.5" fill="currentColor" />
-          </svg>
+          {/* Ping dot with ripple when value available */}
+          <span className="relative flex items-center justify-center w-3 h-3">
+            <span className={cn(
+              "w-2 h-2 rounded-full block",
+              pingMs != null && pingMs < 80 ? "bg-green-400" :
+              pingMs != null && pingMs < 200 ? "bg-amber-400" :
+              pingMs != null ? "bg-red-400" : "bg-gray-300"
+            )} />
+            {pingMs != null && (
+              <span className={cn(
+                "absolute inset-0 rounded-full animate-ping opacity-50",
+                pingMs < 80 ? "bg-green-400" :
+                pingMs < 200 ? "bg-amber-400" : "bg-red-400"
+              )} />
+            )}
+          </span>
           <span className="font-medium">{pingMs != null ? `${Math.round(pingMs)}ms` : "—"}</span>
-          <span className="text-gray-400">·</span>
-          <span className="uppercase text-xs font-semibold text-gray-500">{effectiveType === "unknown" ? "Wi-Fi" : effectiveType.toUpperCase()}</span>
+          <span className="text-gray-300">·</span>
+          <span className="uppercase text-xs font-semibold text-gray-500">
+            {effectiveType === "unknown" ? "Wi-Fi" : effectiveType.toUpperCase()}
+          </span>
         </div>
         <div className="flex items-center gap-1.5 text-sm text-gray-500">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -56,7 +71,7 @@ export function QuestionCard({ question, questionNumber, total, answers, selecte
       </div>
 
       {/* Main card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-scale-in delay-75">
         {/* Progress dots */}
         <div className="px-5 pt-5 pb-3">
           <div className="flex gap-1 flex-wrap">
@@ -64,10 +79,10 @@ export function QuestionCard({ question, questionNumber, total, answers, selecte
               <div
                 key={i}
                 className={cn(
-                  "w-4 h-4 rounded-full transition-all duration-200",
-                  d === "correct" && "bg-sky-500",
-                  d === "wrong" && "bg-red-400",
-                  d === "current" && "bg-sky-300 ring-2 ring-sky-200",
+                  "w-4 h-4 rounded-full transition-all duration-300",
+                  d === "correct" && "bg-sky-500 scale-110",
+                  d === "wrong"   && "bg-red-400 scale-110",
+                  d === "current" && "bg-sky-300 ring-2 ring-sky-200 scale-125",
                   d === "pending" && "bg-gray-200"
                 )}
               />
@@ -77,7 +92,9 @@ export function QuestionCard({ question, questionNumber, total, answers, selecte
 
         {/* Question */}
         <div className="px-5 pb-3">
-          <p className="text-sm text-gray-400 font-medium mb-3">Questão {questionNumber + 1} de {total}</p>
+          <p className="text-sm text-gray-400 font-medium mb-3">
+            Questão {questionNumber + 1} de {total}
+          </p>
           <div className="bg-gray-50 rounded-xl px-5 py-4 text-center">
             <p className="text-gray-800 font-semibold text-base">{question.text}</p>
           </div>
@@ -87,28 +104,40 @@ export function QuestionCard({ question, questionNumber, total, answers, selecte
         <div className="px-5 pb-5 space-y-2.5">
           {question.options.map((opt, i) => {
             const isSelected = selectedAnswer === i;
-            const isCorrect = i === question.correct;
+            const isCorrect  = i === question.correct;
+
             let style = "bg-gray-50 border-gray-200 text-gray-700";
+            let labelStyle = "bg-gray-200 text-gray-600";
+            let iconEl: React.ReactNode = null;
+
             if (showFeedback) {
-              if (isSelected && !isCorrect) style = "bg-red-50 border-red-300 text-red-800";
-              else if (isCorrect) style = "bg-green-50 border-green-300 text-green-800";
+              if (isSelected && !isCorrect) {
+                style      = "bg-red-50 border-red-300 text-red-800";
+                labelStyle = "bg-red-400 text-white";
+                iconEl     = <X size={16} className="text-red-400 flex-shrink-0 animate-check-pop" />;
+              } else if (isCorrect) {
+                style      = "bg-green-50 border-green-300 text-green-800";
+                labelStyle = "bg-green-500 text-white";
+                iconEl     = <Check size={16} className="text-green-500 flex-shrink-0 animate-check-pop" />;
+              }
             }
+
             return (
               <div
                 key={i}
-                className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all duration-300", style)}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all duration-300",
+                  style
+                )}
               >
                 <span className={cn(
-                  "w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0",
-                  showFeedback && isSelected && !isCorrect ? "bg-red-400 text-white" :
-                  showFeedback && isCorrect ? "bg-green-500 text-white" :
-                  "bg-gray-200 text-gray-600"
+                  "w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all duration-300",
+                  labelStyle
                 )}>
                   {LABELS[i]}
                 </span>
                 <span className="text-sm font-medium flex-1">{opt}</span>
-                {showFeedback && isCorrect && <Check size={16} className="text-green-500 flex-shrink-0" />}
-                {showFeedback && isSelected && !isCorrect && <X size={16} className="text-red-400 flex-shrink-0" />}
+                {iconEl}
               </div>
             );
           })}
@@ -117,14 +146,20 @@ export function QuestionCard({ question, questionNumber, total, answers, selecte
         {/* Feedback bar */}
         {showFeedback && selectedAnswer !== null && (
           <div className={cn(
-            "px-5 py-3 flex items-center justify-between border-t text-sm font-medium",
-            selectedAnswer === question.correct ? "bg-green-50 border-green-100 text-green-700" : "bg-red-50 border-red-100 text-red-700"
+            "px-5 py-3 flex items-center justify-between border-t text-sm font-medium animate-fade-up",
+            isCorrectAnswer
+              ? "bg-green-50 border-green-100 text-green-700"
+              : "bg-red-50 border-red-100 text-red-700"
           )}>
             <div className="flex items-center gap-2">
-              {selectedAnswer === question.correct ? <Check size={14} /> : <X size={14} />}
-              {selectedAnswer === question.correct ? "Correto!" : `Errou — Resp. correta: ${question.options[question.correct]}`}
+              {isCorrectAnswer
+                ? <Check size={14} className="animate-check-pop" />
+                : <X size={14} className="animate-check-pop" />}
+              {isCorrectAnswer
+                ? "Correto!"
+                : `Errou — Resp. correta: ${question.options[question.correct]}`}
             </div>
-            <span className="text-gray-400 text-xs">PRÓXIMA...</span>
+            <span className="text-gray-400 text-xs tracking-wide">PRÓXIMA...</span>
           </div>
         )}
       </div>

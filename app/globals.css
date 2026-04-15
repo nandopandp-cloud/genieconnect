@@ -32,13 +32,135 @@
   }
 }
 
+/* ─── Keyframes ──────────────────────────────────────────────────────────── */
+
 @keyframes genie-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.55; transform: scale(0.97); }
+  50%       { opacity: 0.55; transform: scale(0.97); }
 }
-.animate-genie-pulse {
-  animation: genie-pulse 2.2s ease-in-out infinite;
+
+@keyframes genie-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
 }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-right {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-left {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes ping-ripple {
+  0%        { transform: scale(1);   opacity: 0.7; }
+  70%, 100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: translateY(0);    opacity: 0.4; }
+  40%           { transform: translateY(-6px); opacity: 1; }
+}
+
+@keyframes progress-bar {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(14, 165, 233, 0.25); }
+  50%       { box-shadow: 0 0 28px rgba(14, 165, 233, 0.55); }
+}
+
+@keyframes check-pop {
+  0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(3deg);  opacity: 1; }
+  100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+
+/* ─── Animation utility classes ─────────────────────────────────────────── */
+
+.animate-genie-pulse { animation: genie-pulse 2.2s ease-in-out infinite; }
+.animate-genie-float { animation: genie-float 3.2s ease-in-out infinite; }
+
+.animate-fade-up   { animation: fade-up   0.45s cubic-bezier(0.22,1,0.36,1) both; }
+.animate-fade-down { animation: fade-down 0.35s cubic-bezier(0.22,1,0.36,1) both; }
+.animate-fade-in   { animation: fade-in   0.35s ease both; }
+.animate-scale-in  { animation: scale-in  0.4s  cubic-bezier(0.34,1.56,0.64,1) both; }
+.animate-slide-right { animation: slide-right 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.animate-slide-left  { animation: slide-left  0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.animate-check-pop   { animation: check-pop   0.45s cubic-bezier(0.34,1.56,0.64,1) both; }
+.animate-glow-pulse  { animation: glow-pulse  2s ease-in-out infinite; }
+
+/* Stagger delays */
+.delay-0   { animation-delay: 0ms; }
+.delay-75  { animation-delay: 75ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-250 { animation-delay: 250ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-350 { animation-delay: 350ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-450 { animation-delay: 450ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-800 { animation-delay: 800ms; }
+
+/* Loading dots */
+.dot-bounce { animation: dot-bounce 1.2s ease-in-out infinite; }
+.dot-bounce:nth-child(2) { animation-delay: 0.15s; }
+.dot-bounce:nth-child(3) { animation-delay: 0.30s; }
+
+/* Shimmer text / skeleton */
+.shimmer-text {
+  background: linear-gradient(90deg, #0EA5E9 0%, #38BDF8 40%, #0EA5E9 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* Ping ripple (status indicator) */
+.ping-ripple::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  animation: ping-ripple 1.6s ease-out infinite;
+}
+
+/* ─── Existing glass utilities ───────────────────────────────────────────── */
 
 @layer utilities {
   .glass {
@@ -52,5 +174,20 @@
   }
   .glow-cyan {
     box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    transition: transform 0.2s cubic-bezier(0.22,1,0.36,1),
+                box-shadow 0.2s cubic-bezier(0.22,1,0.36,1);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+
+  /* Card entrance — applied once, not looping */
+  .card-enter {
+    animation: fade-up 0.45s cubic-bezier(0.22,1,0.36,1) both;
   }
 }
