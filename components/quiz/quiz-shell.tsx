@@ -30,9 +30,18 @@ export function QuizShell() {
   }, [state.phase, state.savedId, router]);
 
   if (state.phase === "idle" || state.phase === "measuring") {
-    const isDl = state.phase === "measuring" && state.answers.length === QUESTIONS.length;
-    if (isDl) {
-      return <SpeedometerScreen mbps={state.liveDownload} />;
+    const isSpeedPhase = state.phase === "measuring" && state.answers.length === QUESTIONS.length;
+    if (isSpeedPhase) {
+      // Download finished (>0) and upload already started → show upload gauge.
+      const isUploadPhase =
+        state.downloadMbps != null || state.liveUpload > 0;
+      const mbps = isUploadPhase ? state.liveUpload : state.liveDownload;
+      return (
+        <SpeedometerScreen
+          mbps={mbps}
+          direction={isUploadPhase ? "upload" : "download"}
+        />
+      );
     }
     return (
       <MeasuringScreen

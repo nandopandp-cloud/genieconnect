@@ -171,7 +171,9 @@ export function useQuizTest() {
       if (ac.signal.aborted) return;
 
       // ── Upload test ──────────────────────────────────────────────────
-      patch({ liveUpload: 0 });
+      // Freeze the final download value so the UI knows the DL phase ended
+      // and can switch the speedometer over to upload.
+      patch({ downloadMbps, liveUpload: 0 });
       const uploadMbps = await measureUpload(
         (mbps) => patch({ liveUpload: mbps }),
         ac.signal

@@ -35,9 +35,11 @@ const SCALE_LABELS = [0, 5, 10, 50, 100, 250, 500, 750, 1000];
 
 interface Props {
   mbps: number;
+  direction?: "download" | "upload";
 }
 
-export function SpeedometerScreen({ mbps }: Props) {
+export function SpeedometerScreen({ mbps, direction = "download" }: Props) {
+  const isUp = direction === "upload";
   const clamped = Math.max(0, Math.min(mbps, 1000));
   const pct = mbpsToPct(clamped);
   const activeSweep = pct * SWEEP;
@@ -54,7 +56,7 @@ export function SpeedometerScreen({ mbps }: Props) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
       <p className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-6">
-        Medindo velocidade de download...
+        {isUp ? "Medindo velocidade de upload..." : "Medindo velocidade de download..."}
       </p>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-6 pt-6 pb-5">
@@ -155,7 +157,7 @@ export function SpeedometerScreen({ mbps }: Props) {
             letterSpacing="1"
             fontWeight="500"
           >
-            ↓ Mbps
+            {isUp ? "↑ Mbps" : "↓ Mbps"}
           </text>
         </svg>
       </div>

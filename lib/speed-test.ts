@@ -165,8 +165,21 @@ export async function measureDownload(
 ): Promise<number> {
   const run = startRun(onProgress);
 
+  // Inner controller so we can hard-abort in-flight fetches when the
+  // measurement window ends, regardless of external signal.
+  const innerAc = new AbortController();
+  const composite = signal
+    ? (() => {
+        const ac = new AbortController();
+        const forward = () => ac.abort();
+        signal.addEventListener("abort", forward);
+        innerAc.signal.addEventListener("abort", forward);
+        return ac.signal;
+      })()
+    : innerAc.signal;
+
   const workers: Promise<void>[] = [];
-  const spawn = () => workers.push(downloadWorker(run, signal));
+  const spawn = () => workers.push(downloadWorker(run, composite));
 
   for (let i = 0; i < DL_INITIAL_WORKERS; i++) spawn();
 
@@ -195,14 +208,21 @@ export async function measureDownload(
     }
   })();
 
-  const stopper = delay(WARMUP_MS + MEASURE_MS + GRACE_MS).then(() => {
-    run.active = false;
+  const HARD_TIMEOUT = WARMUP_MS + MEASURE_MS + GRACE_MS + 2000;
+  await new Promise<void>((resolve) => {
+    const timer = setTimeout(() => {
+      run.active = false;
+      innerAc.abort();
+      resolve();
+    }, HARD_TIMEOUT);
+    Promise.allSettled(workers).then(() => {
+      clearTimeout(timer);
+      resolve();
+    });
   });
-
-  await Promise.race([stopper, Promise.allSettled(workers)]);
   run.active = false;
+  innerAc.abort();
   await ramp.catch(() => {});
-  await Promise.allSettled(workers);
 
   return finalMbps(run);
 }
@@ -243,7 +263,31 @@ function makeUploadStream(chunkBytes: number, getActive: () => boolean, signal?:
   };
 }
 
-async function uploadWorker(run: ThroughputRun, signal?: AbortSignal) {
+let streamingUploadSupported: boolean | null = null;
+
+async function probeStreamingUpload(): Promise<boolean> {
+  if (streamingUploadSupported !== null) return streamingUploadSupported;
+  try {
+    const probe = new ReadableStream<Uint8Array>({
+      start(c) {
+        c.enqueue(new Uint8Array(1));
+        c.close();
+      },
+    });
+    const req = new Request("/api/speed/upload", {
+      method: "POST",
+      body: probe,
+      // @ts-expect-error - duplex only exists in whatwg-fetch types in newer TS libs
+      duplex: "half",
+    });
+    streamingUploadSupported = req.body !== null;
+  } catch {
+    streamingUploadSupported = false;
+  }
+  return streamingUploadSupported;
+}
+
+async function uploadWorkerStreaming(run: ThroughputRun, signal?: AbortSignal) {
   while (run.active && !signal?.aborted && performance.now() < run.measureEnd) {
     try {
       const { stream, onChunkSent } = makeUploadStream(
@@ -268,14 +312,62 @@ async function uploadWorker(run: ThroughputRun, signal?: AbortSignal) {
   }
 }
 
+async function uploadWorkerBuffered(run: ThroughputRun, signal?: AbortSignal) {
+  const SUB = 64 * 1024;
+  const seed = new Uint8Array(SUB);
+  crypto.getRandomValues(seed);
+  // Pre-build a single chunk payload (reused across requests).
+  const payload = new Uint8Array(UL_CHUNK_BYTES);
+  for (let off = 0; off < UL_CHUNK_BYTES; off += SUB) {
+    payload.set(seed.subarray(0, Math.min(SUB, UL_CHUNK_BYTES - off)), off);
+  }
+
+  while (run.active && !signal?.aborted && performance.now() < run.measureEnd) {
+    const chunkStart = performance.now();
+    try {
+      await fetch(UPLOAD_ENDPOINT, {
+        method: "POST",
+        body: payload,
+        cache: "no-store",
+        headers: { "Content-Type": "application/octet-stream" },
+        signal,
+      });
+      // Approximate byte-time distribution across the chunk duration by
+      // recording the full payload once the request completes.
+      const elapsed = performance.now() - chunkStart;
+      if (elapsed > 0) recordBytes(run, UL_CHUNK_BYTES);
+    } catch {
+      if (signal?.aborted) return;
+      await delay(50);
+    }
+  }
+}
+
+async function uploadWorker(run: ThroughputRun, signal?: AbortSignal) {
+  const canStream = await probeStreamingUpload();
+  if (canStream) return uploadWorkerStreaming(run, signal);
+  return uploadWorkerBuffered(run, signal);
+}
+
 export async function measureUpload(
   onProgress: (mbps: number) => void,
   signal?: AbortSignal
 ): Promise<number> {
   const run = startRun(onProgress);
 
+  const innerAc = new AbortController();
+  const composite = signal
+    ? (() => {
+        const ac = new AbortController();
+        const forward = () => ac.abort();
+        signal.addEventListener("abort", forward);
+        innerAc.signal.addEventListener("abort", forward);
+        return ac.signal;
+      })()
+    : innerAc.signal;
+
   const workers: Promise<void>[] = [];
-  const spawn = () => workers.push(uploadWorker(run, signal));
+  const spawn = () => workers.push(uploadWorker(run, composite));
   for (let i = 0; i < UL_INITIAL_WORKERS; i++) spawn();
 
   const ramp = (async () => {
@@ -289,14 +381,21 @@ export async function measureUpload(
     }
   })();
 
-  const stopper = delay(WARMUP_MS + MEASURE_MS + GRACE_MS).then(() => {
-    run.active = false;
+  const HARD_TIMEOUT = WARMUP_MS + MEASURE_MS + GRACE_MS + 3000;
+  await new Promise<void>((resolve) => {
+    const timer = setTimeout(() => {
+      run.active = false;
+      innerAc.abort();
+      resolve();
+    }, HARD_TIMEOUT);
+    Promise.allSettled(workers).then(() => {
+      clearTimeout(timer);
+      resolve();
+    });
   });
-
-  await Promise.race([stopper, Promise.allSettled(workers)]);
   run.active = false;
+  innerAc.abort();
   await ramp.catch(() => {});
-  await Promise.allSettled(workers);
 
   return finalMbps(run);
 }
