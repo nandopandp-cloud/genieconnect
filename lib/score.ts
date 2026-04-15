@@ -1,8 +1,18 @@
-export function calculateScore(pingMs: number, jitterMs: number, downloadMbps: number): number {
+export function calculateScore(
+  pingMs: number,
+  jitterMs: number,
+  downloadMbps: number,
+  uploadMbps: number = 0
+): number {
   const pingScore = Math.max(0, Math.min(100, (1 - pingMs / 1000) * 100));
   const jitterScore = Math.max(0, Math.min(100, (1 - jitterMs / 500) * 100));
   const dlScore = Math.max(0, Math.min(100, (downloadMbps / 200) * 100));
-  const raw = pingScore * 0.3 + jitterScore * 0.2 + dlScore * 0.5;
+  const ulScore = Math.max(0, Math.min(100, (uploadMbps / 50) * 100));
+  const raw =
+    pingScore * 0.25 +
+    jitterScore * 0.15 +
+    dlScore * 0.4 +
+    ulScore * 0.2;
   return Math.round(raw * 10) / 10;
 }
 

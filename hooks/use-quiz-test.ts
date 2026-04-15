@@ -2,7 +2,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useNetworkInfo } from "./use-network-info";
 import { QUESTIONS } from "@/lib/quiz-data";
-import { measureDownload } from "@/lib/speed-test";
+import { measureDownload, measurePing, measureUpload } from "@/lib/speed-test";
 import { calculateScore } from "@/lib/score";
 import type { QuizAnswer, QuizPhase } from "@/lib/types";
 
@@ -11,9 +11,11 @@ export interface QuizState {
   currentQuestion: number;
   answers: QuizAnswer[];
   liveDownload: number;
+  liveUpload: number;
   pingMs: number | null;
   jitterMs: number | null;
   downloadMbps: number | null;
+  uploadMbps: number | null;
   score: number | null;
   selectedAnswer: number | null;
   showFeedback: boolean;
@@ -28,9 +30,11 @@ const INITIAL: QuizState = {
   currentQuestion: 0,
   answers: [],
   liveDownload: 0,
+  liveUpload: 0,
   pingMs: null,
   jitterMs: null,
   downloadMbps: null,
+  uploadMbps: null,
   score: null,
   selectedAnswer: null,
   showFeedback: false,
@@ -85,9 +89,15 @@ export function useQuizTest() {
     setState({ ...INITIAL, phase: "measuring" });
 
     try {
-      // Short warm-up ping so the first question ping isn't an outlier
-      await fetch(`/api/speed/ping?t=${Date.now()}`, { cache: "no-store" }).catch(() => {});
+      // ── Dedicated ping/jitter measurement (real latency, before UI noise)
+      const pingResult = await measurePing().catch(() => null);
       if (ac.signal.aborted) return;
+      if (pingResult) {
+        patch({
+          pingMs: pingResult.pingMs,
+          jitterMs: pingResult.jitterMs,
+        });
+      }
 
       patch({ phase: "question", currentQuestion: 0 });
       await delay(200);
@@ -160,20 +170,43 @@ export function useQuizTest() {
       );
       if (ac.signal.aborted) return;
 
-      // ── Aggregate metrics ────────────────────────────────────────────
-      const avgPing =
-        questionPings.reduce((a, b) => a + b, 0) / questionPings.length;
-      const diffs = questionPings
-        .slice(1)
-        .map((v, i) => Math.abs(v - questionPings[i]));
-      const avgJitter =
-        diffs.length > 0
-          ? diffs.reduce((a, b) => a + b, 0) / diffs.length
-          : 0;
+      // ── Upload test ──────────────────────────────────────────────────
+      patch({ liveUpload: 0 });
+      const uploadMbps = await measureUpload(
+        (mbps) => patch({ liveUpload: mbps }),
+        ac.signal
+      ).catch(() => 0);
+      if (ac.signal.aborted) return;
 
-      const finalPing = Math.round(avgPing * 10) / 10;
-      const finalJitter = Math.round(avgJitter * 10) / 10;
-      const score = calculateScore(finalPing, finalJitter, downloadMbps);
+      // ── Aggregate metrics ────────────────────────────────────────────
+      // Prefer dedicated ping measurement; fall back to quiz response-time
+      // samples only if the dedicated run failed.
+      let finalPing: number;
+      let finalJitter: number;
+      let minPing: number;
+      let maxPing: number;
+      if (pingResult) {
+        finalPing = pingResult.pingMs;
+        finalJitter = pingResult.jitterMs;
+        minPing = pingResult.minPingMs;
+        maxPing = pingResult.maxPingMs;
+      } else {
+        const avgPing =
+          questionPings.reduce((a, b) => a + b, 0) / questionPings.length;
+        const diffs = questionPings
+          .slice(1)
+          .map((v, i) => Math.abs(v - questionPings[i]));
+        const avgJitter =
+          diffs.length > 0
+            ? diffs.reduce((a, b) => a + b, 0) / diffs.length
+            : 0;
+        finalPing = Math.round(avgPing * 10) / 10;
+        finalJitter = Math.round(avgJitter * 10) / 10;
+        minPing = Math.min(...questionPings);
+        maxPing = Math.max(...questionPings);
+      }
+
+      const score = calculateScore(finalPing, finalJitter, downloadMbps, uploadMbps);
 
       // ── Save to DB ───────────────────────────────────────────────────
       const ni = networkInfoRef.current;
@@ -186,11 +219,11 @@ export function useQuizTest() {
           pingMs: finalPing,
           jitterMs: finalJitter,
           downloadMbps,
-          uploadMbps: 0,
+          uploadMbps,
           score,
           quizResults: answers,
-          minPingMs: Math.min(...questionPings),
-          maxPingMs: Math.max(...questionPings),
+          minPingMs: minPing,
+          maxPingMs: maxPing,
         }),
       });
 
@@ -206,6 +239,7 @@ export function useQuizTest() {
         pingMs: finalPing,
         jitterMs: finalJitter,
         downloadMbps,
+        uploadMbps,
         score,
         savedId: id,
         effectiveType: ni.effectiveType,
