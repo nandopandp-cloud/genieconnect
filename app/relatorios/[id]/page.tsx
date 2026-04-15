@@ -95,90 +95,107 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
         {/* 4 main metric cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {/* Qualidade da Rede */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                <Wifi size={15} className="text-gray-500" />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:col-span-2 hover:shadow-md transition-shadow duration-300 animate-fade-up">
+            <div className="flex items-start justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  style={{ background: `${scoreInfo.color}15` }}
+                >
+                  <Wifi size={16} style={{ color: scoreInfo.color }} />
+                </div>
+                <div>
+                  <span className="text-xs text-gray-400 font-medium uppercase tracking-wider block">
+                    Qualidade da Rede
+                  </span>
+                </div>
               </div>
-              <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-                Qualidade da Rede
+              <div className="text-right">
+                <p className="text-3xl font-bold" style={{ color: scoreInfo.color }}>
+                  {test.score != null ? Number(test.score).toFixed(1) : "—"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 mb-4">
+              <span
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide"
+                style={{ background: scoreInfo.bgColor, color: scoreInfo.textColor }}
+              >
+                {scoreInfo.label}
               </span>
             </div>
-            <p
-              className="text-3xl font-bold mb-1"
-              style={{ color: scoreInfo.color }}
-            >
-              {test.score != null ? Number(test.score).toFixed(1) : "—"}
-            </p>
-            <p className="text-sm font-semibold mb-2" style={{ color: scoreInfo.color }}>
-              {scoreInfo.label}
-            </p>
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p className="text-sm text-gray-600 leading-relaxed">
               {scoreInfo.guidance}
             </p>
           </div>
 
           {/* Ping médio */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                <Activity size={15} className="text-gray-500" />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-300 animate-fade-up delay-100">
+            <div className="flex items-center gap-2 mb-4">
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center"
+                style={{ background: `${pingInfo.color}15` }}
+              >
+                <Activity size={16} style={{ color: pingInfo.color }} />
               </div>
               <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
                 Ping médio
               </span>
             </div>
             <p
-              className="text-3xl font-bold mb-1"
+              className="text-3xl font-bold mb-2"
               style={{ color: pingInfo.color }}
             >
               {Number(test.ping_ms).toFixed(1)}
               <span className="text-sm font-normal text-gray-400 ml-1">ms</span>
             </p>
-            <p className="text-sm font-medium" style={{ color: pingInfo.color }}>
+            <p className="text-xs font-semibold" style={{ color: pingInfo.color }}>
               {pingInfo.label}
             </p>
           </div>
 
           {/* Download */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                <Zap size={15} className="text-gray-500" />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-300 animate-fade-up delay-150">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <Zap size={16} className="text-emerald-500" />
               </div>
               <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
                 Download
               </span>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">
+            <p className="text-3xl font-bold text-emerald-600 mb-2">
               {Number(test.download_mbps).toFixed(2)}
               <span className="text-sm font-normal text-gray-400 ml-1">Mbps</span>
             </p>
-            <p className="text-sm text-gray-500">{dlInfo.label}</p>
+            <p className="text-xs text-gray-500">{dlInfo.label}</p>
           </div>
 
           {/* Upload */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-                <Upload size={15} className="text-violet-500" />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-300 animate-fade-up delay-200">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center">
+                <Upload size={16} className="text-violet-500" />
               </div>
               <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
                 Upload
               </span>
             </div>
-            <p className="text-3xl font-bold text-violet-600 mb-1">
+            <p className="text-3xl font-bold text-violet-600 mb-2">
               {ulMbps.toFixed(2)}
               <span className="text-sm font-normal text-gray-400 ml-1">Mbps</span>
             </p>
-            <p className="text-sm text-gray-500">{ulInfo.label}</p>
+            <p className="text-xs text-gray-500">{ulInfo.label}</p>
           </div>
         </div>
 
         {/* Wi-Fi indicators card */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold text-gray-800">Indicadores de Rede Wi-Fi</h2>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 animate-fade-up delay-75">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-bold text-gray-800">Indicadores de Rede Wi-Fi</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Detalhes técnicos da sua conexão</p>
+            </div>
             <div>{connectionLabel}</div>
           </div>
 
@@ -276,27 +293,37 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* Rubric legend */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-          <div className="mb-4">
-            <h2 className="font-bold text-gray-800">Legenda de Rubricas</h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Entenda o que cada classificação de qualidade significa para sua rede escolar.
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 animate-fade-up">
+          <div className="mb-6">
+            <h2 className="font-bold text-gray-800 mb-1.5">Entenda as Rubricas</h2>
+            <p className="text-xs text-gray-500">
+              Classificações que definem o nível de sua infraestrutura de rede educacional.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            {SCORE_RUBRICS.map((r) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {SCORE_RUBRICS.map((r, idx) => (
               <div
                 key={r.label}
-                className="rounded-xl p-4 border"
-                style={{ background: r.bgColor, borderColor: r.color + "33" }}
+                className="rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:shadow-md hover:scale-105 origin-top-left"
+                style={{
+                  borderLeftWidth: "3px",
+                  borderLeftColor: r.color,
+                  backgroundColor: `${r.color}08`,
+                  animationDelay: `${idx * 75}ms`
+                }}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: r.color, color: "#fff" }}>
+                <div className="flex items-start justify-between mb-3">
+                  <span
+                    className="text-xs font-bold px-2.5 py-1 rounded-md text-white uppercase tracking-wide"
+                    style={{ background: r.color }}
+                  >
                     {r.label}
                   </span>
-                  <span className="text-[10px] font-semibold text-gray-400 tabular-nums">{r.range}</span>
+                  <span className="text-[11px] font-semibold text-gray-400 ml-2">
+                    {r.range}
+                  </span>
                 </div>
-                <p className="text-xs leading-relaxed" style={{ color: r.textColor }}>
+                <p className="text-xs text-gray-700 leading-relaxed">
                   {r.guidance}
                 </p>
               </div>
