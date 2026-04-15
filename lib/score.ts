@@ -8,9 +8,9 @@ export function calculateScore(
   const ulScore = Math.max(0, Math.min(100, (uploadMbps / 50) * 100));
   const latencyScore = Math.max(0, Math.min(100, (1 - pingMs / 1000) * 100));
   const raw =
-    dlScore * 0.6 +
-    ulScore * 0.3 +
-    latencyScore * 0.1;
+    dlScore * 0.5 +
+    ulScore * 0.35 +
+    latencyScore * 0.15;
   return Math.round(raw * 10) / 10;
 }
 

@@ -1,5 +1,6 @@
 import sql from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { getScoreInfo } from "@/lib/score";
 import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -10,12 +11,13 @@ export async function POST(req: NextRequest) {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? req.headers.get("x-real-ip") ?? "unknown";
     const userAgent = req.headers.get("user-agent") ?? "";
     const userId = session?.userId ?? null;
+    const scoreLabel = score != null ? getScoreInfo(score).label : null;
 
     const rows = await sql`
       INSERT INTO speed_tests
-        (connection_type, effective_type, ping_ms, jitter_ms, download_mbps, upload_mbps, ip_address, user_agent, score, quiz_results, min_ping_ms, max_ping_ms, user_id)
+        (connection_type, effective_type, ping_ms, jitter_ms, download_mbps, upload_mbps, ip_address, user_agent, score, score_label, quiz_results, min_ping_ms, max_ping_ms, user_id)
       VALUES
-        (${connectionType}, ${effectiveType}, ${pingMs}, ${jitterMs}, ${downloadMbps}, ${uploadMbps ?? 0}, ${ip}, ${userAgent}, ${score ?? null}, ${quizResults ? JSON.stringify(quizResults) : null}, ${minPingMs ?? null}, ${maxPingMs ?? null}, ${userId})
+        (${connectionType}, ${effectiveType}, ${pingMs}, ${jitterMs}, ${downloadMbps}, ${uploadMbps ?? 0}, ${ip}, ${userAgent}, ${score ?? null}, ${scoreLabel}, ${quizResults ? JSON.stringify(quizResults) : null}, ${minPingMs ?? null}, ${maxPingMs ?? null}, ${userId})
       RETURNING id, created_at
     `;
     return Response.json(rows[0]);

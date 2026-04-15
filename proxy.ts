@@ -5,7 +5,7 @@ const SECRET = new TextEncoder().encode(
   process.env.SESSION_SECRET || "gc-secret-key-change-in-production-32chars"
 );
 
-const PUBLIC_PATHS = ["/login", "/api/auth", "/api/setup"];
+const PUBLIC_PATHS = ["/login", "/api/auth", "/api/setup", "/api/admin"];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
