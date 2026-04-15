@@ -92,43 +92,43 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
         {/* School card */}
         <SchoolCard testId={test.id} initialSchool={test.school_name} />
 
-        {/* 4 main metric cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {/* Qualidade da Rede */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:col-span-2 hover:shadow-md transition-shadow duration-300 animate-fade-up">
-            <div className="flex items-start justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center"
-                  style={{ background: `${scoreInfo.color}15` }}
-                >
-                  <Wifi size={16} style={{ color: scoreInfo.color }} />
-                </div>
-                <div>
-                  <span className="text-xs text-gray-400 font-medium uppercase tracking-wider block">
-                    Qualidade da Rede
-                  </span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-3xl font-bold" style={{ color: scoreInfo.color }}>
-                  {test.score != null ? Number(test.score).toFixed(1) : "—"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 mb-4">
-              <span
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide"
-                style={{ background: scoreInfo.bgColor, color: scoreInfo.textColor }}
+        {/* Quality score card */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 hover:shadow-md transition-shadow duration-300 animate-fade-up">
+          <div className="flex items-start justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ background: `${scoreInfo.color}15` }}
               >
-                {scoreInfo.label}
-              </span>
+                <Wifi size={16} style={{ color: scoreInfo.color }} />
+              </div>
+              <div>
+                <span className="text-xs text-gray-400 font-medium uppercase tracking-wider block">
+                  Qualidade da Rede
+                </span>
+              </div>
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              {scoreInfo.guidance}
-            </p>
+            <div className="text-right">
+              <p className="text-3xl font-bold" style={{ color: scoreInfo.color }}>
+                {test.score != null ? Number(test.score).toFixed(1) : "—"}
+              </p>
+            </div>
           </div>
+          <div className="flex items-center gap-2 mb-4">
+            <span
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide"
+              style={{ background: scoreInfo.bgColor, color: scoreInfo.textColor }}
+            >
+              {scoreInfo.label}
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            {scoreInfo.guidance}
+          </p>
+        </div>
 
+        {/* 3 metric cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           {/* Ping médio */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-300 animate-fade-up delay-100">
             <div className="flex items-center gap-2 mb-4">
