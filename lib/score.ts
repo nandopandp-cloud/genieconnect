@@ -5,7 +5,13 @@ export function calculateScore(
   uploadMbps: number = 0
 ): number {
   const dlScore = Math.max(0, Math.min(100, (downloadMbps / 200) * 100));
-  return Math.round(dlScore * 10) / 10;
+  const ulScore = Math.max(0, Math.min(100, (uploadMbps / 50) * 100));
+  const latencyScore = Math.max(0, Math.min(100, (1 - pingMs / 1000) * 100));
+  const raw =
+    dlScore * 0.6 +
+    ulScore * 0.3 +
+    latencyScore * 0.1;
+  return Math.round(raw * 10) / 10;
 }
 
 export interface ScoreInfo {
