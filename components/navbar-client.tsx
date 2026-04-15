@@ -26,7 +26,7 @@ export function NavbarClient({ userName, userEmail }: Props) {
         {/* Logo */}
         <Link href="/inicio" className="flex items-center gap-2">
           <Image src="/geniebot.png" alt="GenieBot" width={36} height={36} className="flex-shrink-0" />
-          <span className="font-bold text-lg tracking-tight">
+          <span className="font-bold text-lg tracking-tight hidden sm:inline">
             <span className="text-gray-900">Genie</span>
             <span className="text-sky-500">Connect</span>
           </span>

@@ -93,7 +93,7 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
         <SchoolCard testId={test.id} initialSchool={test.school_name} />
 
         {/* 4 main metric cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {/* Qualidade da Rede */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-center gap-2 mb-3">
@@ -179,7 +179,7 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
             <div>{connectionLabel}</div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {/* Ping médio */}
             <div className="bg-gray-50 rounded-xl p-4">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
@@ -324,7 +324,7 @@ export default async function RelatorioPage({ params }: { params: Promise<{ id: 
                         }`}
                       >
                         <td className="px-5 py-3 text-xs text-gray-400">{i + 1}</td>
-                        <td className="px-5 py-3 text-xs text-gray-700 max-w-[220px]">
+                        <td className="px-5 py-3 text-xs text-gray-700 max-w-[180px] md:max-w-[220px]">
                           <span className="line-clamp-2">{answer.questionText}</span>
                         </td>
                         <td className="px-5 py-3 text-xs">

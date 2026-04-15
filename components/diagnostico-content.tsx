@@ -28,7 +28,8 @@ export function DiagnosticoContent({ navbar }: Props) {
       <main className="max-w-2xl mx-auto px-4 py-16 flex flex-col items-center text-center">
         {/* Mascot with float animation */}
         <div className="animate-fade-in mb-2">
-          <Mascot size={160} className="mx-auto animate-genie-float" />
+          <Mascot size={100} className="mx-auto md:hidden animate-genie-float" />
+          <Mascot size={160} className="mx-auto hidden md:block animate-genie-float" />
         </div>
 
         <h1 className="text-3xl font-bold text-gray-900 mb-3 animate-fade-up delay-100">
@@ -41,7 +42,7 @@ export function DiagnosticoContent({ navbar }: Props) {
         </p>
 
         {/* Feature badges */}
-        <div className="grid grid-cols-2 gap-3 mb-10 w-full max-w-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10 w-full max-w-sm">
           {[
             { icon: Activity, label: "Ping, jitter e latência" },
             { icon: Wifi,     label: "Velocidade de download" },

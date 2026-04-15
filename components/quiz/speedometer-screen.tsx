@@ -67,10 +67,15 @@ export function SpeedometerScreen({ mbps, direction = "download" }: Props) {
       </p>
 
       <div
-        className="bg-white rounded-3xl border border-gray-100 px-6 pt-6 pb-5 animate-scale-in"
+        className="bg-white rounded-3xl border border-gray-100 px-4 md:px-6 pt-6 pb-5 animate-scale-in max-w-sm md:max-w-none"
         style={{ boxShadow: `0 4px 32px rgba(0,0,0,0.06), ${glowColor}` }}
       >
-        <svg width="288" height="240" viewBox="0 0 300 252">
+        <svg
+          width="288"
+          height="240"
+          viewBox="0 0 300 252"
+          style={{ maxWidth: "100%", height: "auto" }}
+        >
           <defs>
             {/* Download gradient: sky blue */}
             <linearGradient

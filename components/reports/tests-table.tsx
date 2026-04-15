@@ -97,7 +97,7 @@ export function TestsTable({ tests }: { tests: HistoryTest[] }) {
                     <td className="px-5 py-3.5 text-gray-500 text-xs">
                       {formatDateShort(t.created_at)}
                     </td>
-                    <td className="px-5 py-3.5 text-xs max-w-[140px]">
+                    <td className="px-5 py-3.5 text-xs max-w-[100px] md:max-w-[140px]">
                       {t.school_name ? (
                         <span className="text-gray-700 font-medium truncate block">{t.school_name}</span>
                       ) : (

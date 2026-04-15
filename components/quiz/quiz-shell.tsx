@@ -104,7 +104,7 @@ export function QuizShell() {
 
           {/* Mini metrics row */}
           {state.downloadMbps != null && (
-            <div className="flex justify-center gap-4 mb-4 animate-fade-up delay-350">
+            <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-4 animate-fade-up delay-350">
               <div className="text-center">
                 <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-0.5">Ping</p>
                 <p className="text-sm font-bold text-gray-700">

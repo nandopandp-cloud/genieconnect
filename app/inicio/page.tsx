@@ -49,12 +49,12 @@ export default async function InicioPage() {
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         {/* Hero card */}
         <div
-          className="rounded-2xl p-8 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-up"
+          className="rounded-2xl p-4 md:p-8 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-up"
           style={{ background: "linear-gradient(135deg, #0F172A 0%, #0A2040 100%)" }}
         >
           <div className="flex-1 animate-slide-right delay-100">
             <p className="text-white/50 text-sm mb-1">Bem-vindo de volta,</p>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-white mb-3">
               {session?.name ?? "Usuário"}!
             </h1>
             <p className="text-white/50 text-sm mb-6 max-w-md leading-relaxed">
@@ -70,7 +70,8 @@ export default async function InicioPage() {
             </Link>
           </div>
           <div className="flex-shrink-0 animate-slide-left delay-200">
-            <Mascot size={180} className="animate-genie-float" />
+            <Mascot size={120} className="md:hidden animate-genie-float" />
+            <Mascot size={180} className="hidden md:block animate-genie-float" />
           </div>
         </div>
 
