@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: "Diagnóstico inteligente da sua conexão de internet para escolas.",
   icons: {
     icon: "/geniebot.png",
+    shortcut: "/geniebot.png",
+    apple: "/geniebot.png",
   },
 };
 
